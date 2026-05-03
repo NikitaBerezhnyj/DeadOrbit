@@ -32,9 +32,6 @@ jobs:
             name: macos
             rid: osx-x64
 
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,24 +41,44 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Get version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(dotnet msbuild $PROJECT -getProperty:Version | tail -n 1)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
       - name: Restore
         run: dotnet restore
 
-      - name: Publish
-        run: dotnet publish $PROJECT -c Release -r ${{ matrix.rid }} --self-contained true -o publish/${{ matrix.name }}
+      - name: Publish (clean game build)
+        run: |
+          dotnet publish $PROJECT \
+            -c $CONFIGURATION \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:PublishTrimmed=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false \
+            -o build/${{ matrix.name }}
 
-      - name: Upload build artifact
+      - name: Package game build
+        shell: bash
+        run: |
+          mkdir -p dist/${{ matrix.name }}
+
+          # Copy ONLY what you need
+          cp -r build/${{ matrix.name }}/* dist/${{ matrix.name }}/
+
+          # OPTIONAL: keep only game assets explicitly
+          if [ -d "Content" ]; then
+            cp -r Content dist/${{ matrix.name }}/Content
+          fi
+
+          if [ -d "Assets" ]; then
+            cp -r Assets dist/${{ matrix.name }}/Assets
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: deadorbit-${{ matrix.name }}
-          path: publish/${{ matrix.name }}/**
+          path: dist/${{ matrix.name }}/**
           retention-days: 7
 
   release:
@@ -80,18 +97,17 @@ jobs:
 
       - name: Extract version
         run: |
-          VERSION=$(dotnet msbuild $PROJECT -getProperty:Version | tail -n 1)
+          VERSION=$(dotnet msbuild DeadOrbit.csproj -getProperty:Version | tail -n 1)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create Git tag
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-
           git tag "v$VERSION" || true
           git push origin "v$VERSION" || true
 
-      - name: Create GitHub Release
+      - name: Create Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -99,20 +115,29 @@ jobs:
             --title "DeadOrbit v$VERSION" \
             --generate-notes || true
 
-      - name: Upload Windows build
+      - name: Upload Windows
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "v$VERSION" artifacts/deadorbit-windows/** --clobber || true
+          cd artifacts/deadorbit-windows
+          zip -r ../../windows.zip .
 
-      - name: Upload Linux build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "v$VERSION" artifacts/deadorbit-linux/** --clobber || true
+          gh release upload "v$VERSION" ../../windows.zip --clobber
 
-      - name: Upload macOS build
+      - name: Upload Linux
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "v$VERSION" artifacts/deadorbit-macos/** --clobber || true
+          cd artifacts/deadorbit-linux
+          tar -czf ../../linux.tar.gz .
+
+          gh release upload "v$VERSION" ../../linux.tar.gz --clobber
+
+      - name: Upload macOS
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd artifacts/deadorbit-macos
+          tar -czf ../../macos.tar.gz .
+
+          gh release upload "v$VERSION" ../../macos.tar.gz --clobber
