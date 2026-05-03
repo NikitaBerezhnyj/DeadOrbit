@@ -1,0 +1,136 @@
+name: Build and Release DeadOrbit
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            rid: linux-x64
+          - os: windows-latest
+            name: windows
+            rid: win-x64
+          - os: macos-latest
+            name: macos
+            rid: osx-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install Linux dependencies
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1 \
+            libgtk-3-0 \
+            libopenal1
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Extract version from csproj
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" DeadOrbit.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish game
+        run: |
+          dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true -o publish/${{ matrix.name }}
+
+      - name: Package Linux build
+        if: matrix.name == 'linux'
+        run: |
+          cd publish/linux
+          tar -czf ../../DeadOrbit-${{ steps.version.outputs.version }}-linux.tar.gz .
+
+      - name: Package Windows build
+        if: matrix.name == 'windows'
+        shell: bash
+        run: |
+          powershell Compress-Archive -Path publish/windows/* -DestinationPath DeadOrbit-${{ steps.version.outputs.version }}-windows.zip
+
+      - name: Package macOS build
+        if: matrix.name == 'macos'
+        run: |
+          cd publish/macos
+          tar -czf ../../DeadOrbit-${{ steps.version.outputs.version }}-macos.tar.gz .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.name }}
+          path: |
+            *.zip
+            *.tar.gz
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" DeadOrbit.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}" || true
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+
+          gh release create "v${VERSION}" \
+            --title "DeadOrbit v${VERSION}" \
+            --generate-notes || true
+
+      - name: Upload Release Assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+
+          gh release upload "v${VERSION}" artifacts/**/* --clobber || true
