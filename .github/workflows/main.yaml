@@ -63,18 +63,18 @@ jobs:
 
           if [ "${{ matrix.name }}" = "windows" ]; then
             cd "publish/${{ matrix.name }}"
-            7z a "../../dist/deadorbit-windows.zip" .
+            7z a "../../dist/DeadOrbit-windows.zip" .
           elif [ "${{ matrix.name }}" = "linux" ]; then
-            tar -czf "dist/deadorbit-linux.tar.gz" -C "publish/${{ matrix.name }}" .
+            tar -czf "dist/DeadOrbit-linux.tar.gz" -C "publish/${{ matrix.name }}" .
           else
-            tar -czf "dist/deadorbit-macos.tar.gz" -C "publish/${{ matrix.name }}" .
+            tar -czf "dist/DeadOrbit-macos.tar.gz" -C "publish/${{ matrix.name }}" .
           fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deadorbit-${{ matrix.name }}
-          path: dist/deadorbit-${{ matrix.name }}.*
+          name: DeadOrbit-${{ matrix.name }}
+          path: dist/DeadOrbit-${{ matrix.name }}.*
           retention-days: 7
 
   release:
@@ -122,7 +122,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "v$VERSION" \
-            artifacts/deadorbit-windows/deadorbit-windows.zip \
-            artifacts/deadorbit-linux/deadorbit-linux.tar.gz \
-            artifacts/deadorbit-macos/deadorbit-macos.tar.gz \
+            artifacts/DeadOrbit-windows/DeadOrbit-windows.zip \
+            artifacts/DeadOrbit-linux/DeadOrbit-linux.tar.gz \
+            artifacts/DeadOrbit-macos/DeadOrbit-macos.tar.gz \
             --clobber
