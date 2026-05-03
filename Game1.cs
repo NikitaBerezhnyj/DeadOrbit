@@ -36,8 +36,8 @@ namespace DeadOrbit
 
         protected override void Update(GameTime gameTime)
         {
+            InputSystem.Update();
             _world.Update(gameTime);
-
             base.Update(gameTime);
         }
 
