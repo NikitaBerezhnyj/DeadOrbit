@@ -6,14 +6,12 @@ namespace DeadOrbit
     public class Player : GameObject
     {
         private float Speed = 250f;
-        private Texture2D _pixel;
 
         public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 20, 20);
 
-        public Player(Vector2 startPosition, Texture2D pixel)
+        public Player(Vector2 startPosition)
         {
             Position = startPosition;
-            _pixel = pixel;
         }
 
         public override void Update(GameTime gameTime)
@@ -24,7 +22,7 @@ namespace DeadOrbit
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_pixel, Bounds, Color.White);
+            spriteBatch.Draw(GameResources.Pixel, Bounds, Color.White);
         }
     }
 }

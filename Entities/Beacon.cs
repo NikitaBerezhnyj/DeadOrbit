@@ -5,25 +5,28 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace DeadOrbit.Entities
 {
-    public class Beacon
+    public class Beacon : GameObject
     {
-        public Rectangle Bounds;
+        public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 50, 50);
         public bool IsReady;
 
-        public Beacon(Rectangle bounds)
+        public Beacon(Vector2 position)
         {
-            Bounds = bounds;
-            IsReady = false;
+            Position = position;
         }
 
-        public void Update(List<Base> bases)
+        public void Check(List<BaseStation> bases)
         {
-            IsReady = bases.All<Base>(b => b.IsActivated);
+            IsReady = bases.All(b => b.IsActivated);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D pixel)
+        public override void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(pixel, Bounds, IsReady ? Color.Gold : Color.DarkSlateGray);
+            spriteBatch.Draw(
+                GameResources.Pixel,
+                Bounds,
+                IsReady ? Color.Gold : Color.DarkSlateGray
+            );
         }
     }
 }

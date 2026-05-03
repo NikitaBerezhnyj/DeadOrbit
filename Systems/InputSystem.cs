@@ -11,7 +11,6 @@ namespace DeadOrbit
             Vector2 direction = Vector2.Zero;
             var kState = Keyboard.GetState();
             var gState = GamePad.GetState(PlayerIndex.One);
-            Console.WriteLine(GamePad.GetState(PlayerIndex.One).IsConnected);
 
             if (kState.IsKeyDown(Keys.W) || kState.IsKeyDown(Keys.Up))
                 direction.Y -= 1;

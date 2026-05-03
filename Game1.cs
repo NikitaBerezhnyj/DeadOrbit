@@ -10,10 +10,8 @@ namespace DeadOrbit
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private Texture2D _pixel;
 
-        private Player _player;
-        private WorldManager _worldManager;
+        private WorldManager _world;
 
         public Game1()
         {
@@ -24,10 +22,7 @@ namespace DeadOrbit
 
         protected override void Initialize()
         {
-            var random = new Random();
-            int seed = random.Next(10000, 99999);
-
-            _worldManager = new WorldManager(seed);
+            _world = new WorldManager();
 
             base.Initialize();
         }
@@ -36,16 +31,12 @@ namespace DeadOrbit
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            _pixel = new Texture2D(GraphicsDevice, 1, 1);
-            _pixel.SetData(new[] { Color.White });
-
-            _player = new Player(new Vector2(400, 300), _pixel);
+            _world.Load(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            _player.Update(gameTime);
-            _worldManager.Update(_player);
+            _world.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -56,8 +47,7 @@ namespace DeadOrbit
 
             _spriteBatch.Begin();
 
-            _worldManager.Draw(_spriteBatch, _pixel);
-            _player.Draw(_spriteBatch);
+            _world.Draw(_spriteBatch);
 
             _spriteBatch.End();
 

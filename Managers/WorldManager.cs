@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using DeadOrbit.Data;
 using DeadOrbit.Entities;
+using DeadOrbit.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -8,44 +10,50 @@ namespace DeadOrbit.Managers
 {
     public class WorldManager
     {
-        private List<Base> _bases;
+        private Player _player;
+        private List<BaseStation> _baseStations;
         private Beacon _beacon;
+
+        private Texture2D _pixel;
         private int _seed;
 
-        public WorldManager(int seed)
+        public WorldManager()
         {
-            _seed = seed;
-            _bases = new List<Base>();
-            GenerateWorld();
+            _seed = new Random().Next(10000, 99999);
         }
 
-        private void GenerateWorld()
+        public void Load(GraphicsDevice graphicsDevice)
         {
-            Random rnd = new Random(_seed);
-            _bases.Clear();
+            _pixel = new Texture2D(graphicsDevice, 1, 1);
+            _pixel.SetData(new[] { Color.White });
 
-            for (int i = 0; i < 3; i++)
-            {
-                _bases.Add(new Base(new Rectangle(rnd.Next(50, 700), rnd.Next(50, 400), 40, 40)));
-            }
-            _beacon = new Beacon(new Rectangle(380, 20, 50, 50));
+            GameResources.Pixel = _pixel;
+
+            var world = WorldGenerator.Generate(_seed);
+
+            _baseStations = world.BaseStations;
+            _beacon = world.Beacon;
+
+            _player = new Player(new Vector2(400, 300));
         }
 
-        public void Update(Player player)
+        public void Update(GameTime gameTime)
         {
-            foreach (var b in _bases)
-                b.Update(player);
+            _player.Update(gameTime);
 
-            _beacon.Update(_bases);
+            foreach (var b in _baseStations)
+                b.Check(_player);
+
+            _beacon.Check(_baseStations);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D pixel)
+        public void Draw(SpriteBatch spriteBatch)
         {
-            foreach (var b in _bases)
-            {
-                b.Draw(spriteBatch, pixel);
-            }
-            _beacon.Draw(spriteBatch, pixel);
+            foreach (var b in _baseStations)
+                b.Draw(spriteBatch);
+
+            _beacon.Draw(spriteBatch);
+            _player.Draw(spriteBatch);
         }
     }
 }
