@@ -13,14 +13,21 @@ namespace DeadOrbit
             var gState = GamePad.GetState(PlayerIndex.One);
             Console.WriteLine(GamePad.GetState(PlayerIndex.One).IsConnected);
 
-            if (kState.IsKeyDown(Keys.W) || kState.IsKeyDown(Keys.Up)) direction.Y -= 1;
-            if (kState.IsKeyDown(Keys.S) || kState.IsKeyDown(Keys.Down)) direction.Y += 1;
-            if (kState.IsKeyDown(Keys.A) || kState.IsKeyDown(Keys.Left)) direction.X -= 1;
-            if (kState.IsKeyDown(Keys.D) || kState.IsKeyDown(Keys.Right)) direction.X += 1;
+            if (kState.IsKeyDown(Keys.W) || kState.IsKeyDown(Keys.Up))
+                direction.Y -= 1;
+            if (kState.IsKeyDown(Keys.S) || kState.IsKeyDown(Keys.Down))
+                direction.Y += 1;
+            if (kState.IsKeyDown(Keys.A) || kState.IsKeyDown(Keys.Left))
+                direction.X -= 1;
+            if (kState.IsKeyDown(Keys.D) || kState.IsKeyDown(Keys.Right))
+                direction.X += 1;
 
             if (gState.IsConnected)
             {
-                if (Math.Abs(gState.ThumbSticks.Left.X) > 0.1f || Math.Abs(gState.ThumbSticks.Left.Y) > 0.1f)
+                if (
+                    Math.Abs(gState.ThumbSticks.Left.X) > 0.1f
+                    || Math.Abs(gState.ThumbSticks.Left.Y) > 0.1f
+                )
                 {
                     direction.X = gState.ThumbSticks.Left.X;
                     direction.Y = -gState.ThumbSticks.Left.Y;

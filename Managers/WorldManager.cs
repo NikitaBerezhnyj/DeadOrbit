@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using DeadOrbit.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using DeadOrbit.Entities;
 
 namespace DeadOrbit.Managers
 {
