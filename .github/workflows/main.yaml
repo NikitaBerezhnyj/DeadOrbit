@@ -69,9 +69,11 @@ jobs:
 
       - name: Package Windows build
         if: matrix.name == 'windows'
-        shell: bash
+        shell: powershell
         run: |
-          powershell Compress-Archive -Path publish/windows/* -DestinationPath DeadOrbit-${{ steps.version.outputs.version }}-windows.zip
+          $source = "publish/windows"
+          $dest = "DeadOrbit-${{ steps.version.outputs.version }}-windows.zip"
+          Compress-Archive -Path (Get-ChildItem $source) -DestinationPath $dest
 
       - name: Package macOS build
         if: matrix.name == 'macos'
