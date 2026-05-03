@@ -26,6 +26,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,7 +54,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" DeadOrbit.csproj)
+          VERSION=$(dotnet msbuild DeadOrbit.csproj -getProperty:Version | tail -n 1)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Publish game
@@ -88,23 +91,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" DeadOrbit.csproj)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Git tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
@@ -121,8 +118,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-
           gh release create "v${VERSION}" \
             --title "DeadOrbit v${VERSION}" \
             --generate-notes || true
@@ -131,6 +126,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-
           gh release upload "v${VERSION}" artifacts/**/* --clobber || true
