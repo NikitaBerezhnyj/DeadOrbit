@@ -20,3 +20,5 @@ Content/obj/
 *.cache
 .DS_Store
 Thumbs.db
+
+.devnotes
