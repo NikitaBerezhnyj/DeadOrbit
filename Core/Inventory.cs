@@ -27,18 +27,24 @@ namespace DeadOrbit.Core
                 Microsoft.Xna.Framework.Color.LightGray
             );
             Slots[2] = new InventoryItem(
+                "Sword",
+                ItemType.Weapon,
+                1,
+                Microsoft.Xna.Framework.Color.WhiteSmoke
+            );
+            Slots[3] = new InventoryItem(
                 "Coal",
                 ItemType.Resource,
                 3,
                 Microsoft.Xna.Framework.Color.DarkGray
             );
-            Slots[3] = new InventoryItem(
+            Slots[4] = new InventoryItem(
                 "Stone",
                 ItemType.Resource,
                 5,
                 Microsoft.Xna.Framework.Color.SlateGray
             );
-            Slots[4] = new InventoryItem(
+            Slots[5] = new InventoryItem(
                 "Wood",
                 ItemType.Resource,
                 2,

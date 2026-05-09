@@ -16,9 +16,11 @@ namespace DeadOrbit.Managers
         private List<BaseStation> _baseStations;
         private List<ResourceNode> _resources;
         private List<DroppedItem> _droppedItems = new();
+        private List<Enemy> _enemies;
         private Beacon _beacon;
 
         private HotbarRenderer _hotbar;
+        private PlayerHealthRenderer _healthRenderer;
 
         private Texture2D _pixel;
         private int _seed;
@@ -39,23 +41,46 @@ namespace DeadOrbit.Managers
             _baseStations = world.BaseStations;
             _resources = world.Resources;
             _beacon = world.Beacon;
+            _enemies = world.Enemies;
             _player = new Player(13, 9);
             _hotbar = new HotbarRenderer(_player.Inventory, graphicsDevice);
+            _healthRenderer = new PlayerHealthRenderer(_player);
         }
 
         public void Update(GameTime gameTime)
         {
             _player.Update(gameTime);
 
+            foreach (var enemy in _enemies)
+            {
+                enemy.Update(gameTime);
+                if (!enemy.IsDefeated)
+                {
+                    var drop = enemy.UpdateAI(gameTime, _player);
+                    if (drop != null)
+                        _droppedItems.Add(drop);
+                }
+            }
+
             var collidables = new List<ICollidable>();
             collidables.AddRange(_resources.FindAll(r => !r.IsDestroyed));
+            collidables.AddRange(_enemies.FindAll(e => !e.IsDefeated));
             _player.ResolveCollisions(collidables);
+
+            if (InputSystem.UsePressed)
+            {
+                var drop = InteractionSystem.TryMine(_player, _resources);
+
+                if (drop != null)
+                    _droppedItems.Add(drop);
+            }
 
             if (InputSystem.AttackPressed)
             {
-                var dropped = InteractionSystem.TryMine(_player, _resources);
-                if (dropped != null)
-                    _droppedItems.Add(dropped);
+                var drop = CombatSystem.TryPlayerAttack(_player, _enemies);
+
+                if (drop != null)
+                    _droppedItems.Add(drop);
             }
 
             InteractionSystem.TryPickup(_player, _droppedItems);
@@ -74,9 +99,12 @@ namespace DeadOrbit.Managers
                 b.Draw(spriteBatch);
             foreach (var d in _droppedItems)
                 d.Draw(spriteBatch);
+            foreach (var e in _enemies)
+                e.Draw(spriteBatch);
             _beacon.Draw(spriteBatch);
             _player.Draw(spriteBatch);
             _hotbar.Draw(spriteBatch);
+            _healthRenderer.Draw(spriteBatch);
         }
     }
 }

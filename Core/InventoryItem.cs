@@ -6,6 +6,7 @@ namespace DeadOrbit.Core
     {
         None,
         Tool,
+        Weapon,
         Resource,
     }
 

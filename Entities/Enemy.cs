@@ -1,0 +1,171 @@
+using System;
+using DeadOrbit.Core;
+using DeadOrbit.Systems;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+namespace DeadOrbit.Entities
+{
+    public enum EnemyState
+    {
+        Idle,
+        Chase,
+        Attack,
+    }
+
+    public abstract class Enemy : GameObject, ICollidable
+    {
+        public int HP;
+        public int MaxHP;
+        public int Damage;
+        public float Speed;
+        public bool IsDefeated => HP <= 0;
+        public bool BlocksMovement => !IsDefeated;
+
+        public Rectangle Bounds =>
+            new Rectangle((int)Position.X, (int)Position.Y, TileGrid.TileSize, TileGrid.TileSize);
+
+        protected EnemyState State = EnemyState.Idle;
+        protected float AggroRange;
+        protected float AttackRange;
+        protected float AttackCooldown;
+
+        private float _attackTimer = 0f;
+        private float _stunTimer = 0f;
+        private Vector2 _knockbackVelocity = Vector2.Zero;
+        private const float KnockbackDecay = 8f;
+
+        protected Enemy(int tileX, int tileY, int hp, int damage, float speed, float aggroRange)
+        {
+            PlaceOnGrid(tileX, tileY);
+            HP = MaxHP = hp;
+            Damage = damage;
+            Speed = speed;
+            AggroRange = aggroRange;
+            AttackRange = TileGrid.TileSize * 1.1f;
+            AttackCooldown = 1.2f;
+        }
+
+        public abstract InventoryItem GetDrop();
+
+        public void TakeDamage(int amount, Vector2 knockbackDir)
+        {
+            if (_stunTimer > 0)
+                return;
+            HP -= amount;
+            _stunTimer = 0.4f;
+            _knockbackVelocity = knockbackDir * 120f;
+            Console.WriteLine($"[ENEMY] {GetType().Name} HP: {HP}/{MaxHP}");
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            if (IsDefeated)
+                return;
+
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_knockbackVelocity.LengthSquared() > 1f)
+            {
+                Position += _knockbackVelocity * dt;
+                _knockbackVelocity -= _knockbackVelocity * KnockbackDecay * dt;
+            }
+
+            if (_stunTimer > 0)
+            {
+                _stunTimer -= dt;
+                return;
+            }
+
+            _attackTimer -= dt;
+        }
+
+        public DroppedItem UpdateAI(GameTime gameTime, Player player)
+        {
+            if (IsDefeated)
+                return null;
+
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var center = Position + new Vector2(TileGrid.TileSize / 2f);
+            var playerCenter = player.Position + new Vector2(TileGrid.TileSize / 2f);
+            float dist = Vector2.Distance(center, playerCenter);
+
+            switch (State)
+            {
+                case EnemyState.Idle:
+                    if (dist <= AggroRange)
+                    {
+                        State = EnemyState.Chase;
+                        Console.WriteLine($"[AI] {GetType().Name} → Chase");
+                    }
+                    break;
+
+                case EnemyState.Chase:
+                    if (dist > AggroRange)
+                    {
+                        State = EnemyState.Idle;
+                        Console.WriteLine($"[AI] {GetType().Name} → Idle (втратив)");
+                        break;
+                    }
+                    if (dist <= AttackRange)
+                    {
+                        State = EnemyState.Attack;
+                        break;
+                    }
+
+                    if (_stunTimer <= 0)
+                    {
+                        var dir = Vector2.Normalize(playerCenter - center);
+                        Position += dir * Speed * dt;
+                    }
+                    break;
+
+                case EnemyState.Attack:
+                    if (dist > AttackRange)
+                    {
+                        State = EnemyState.Chase;
+                        break;
+                    }
+                    if (_attackTimer <= 0 && _stunTimer <= 0)
+                    {
+                        _attackTimer = AttackCooldown;
+
+                        var knockDir = Vector2.Normalize(playerCenter - center);
+
+                        CombatSystem.HitPlayer(player, Damage, knockDir);
+
+                        return null;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (IsDefeated)
+                return;
+            spriteBatch.Draw(GameResources.Pixel, Bounds, GetBodyColor());
+
+            int barW = TileGrid.TileSize;
+            int barH = 4;
+            int barX = (int)Position.X;
+            int barY = (int)Position.Y - barH - 2;
+            float ratio = (float)HP / MaxHP;
+
+            spriteBatch.Draw(
+                GameResources.Pixel,
+                new Rectangle(barX, barY, barW, barH),
+                Color.DarkRed
+            );
+            spriteBatch.Draw(
+                GameResources.Pixel,
+                new Rectangle(barX, barY, (int)(barW * ratio), barH),
+                Color.Red
+            );
+        }
+
+        protected virtual Color GetBodyColor() => Color.Purple;
+    }
+}

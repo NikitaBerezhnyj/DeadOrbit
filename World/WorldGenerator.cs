@@ -55,7 +55,25 @@ namespace DeadOrbit.World
                 resources.Add(resource);
             }
 
-            return new WorldData(baseStations, beacon, resources);
+            var enemies = new List<Enemy>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                int tx,
+                    ty;
+
+                do
+                {
+                    tx = rnd.Next(1, 22);
+                    ty = rnd.Next(1, 14);
+                } while (usedTiles.Contains((tx, ty)));
+
+                usedTiles.Add((tx, ty));
+
+                enemies.Add(new Beetle(tx, ty));
+            }
+
+            return new WorldData(baseStations, beacon, resources, enemies);
         }
     }
 }
