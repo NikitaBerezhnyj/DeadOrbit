@@ -9,6 +9,7 @@ namespace DeadOrbit
     public class Player : GameObject
     {
         private const float Speed = 160f;
+        public Inventory Inventory { get; private set; }
 
         public Rectangle Bounds =>
             new Rectangle(
@@ -24,6 +25,7 @@ namespace DeadOrbit
         public Player(int tileX, int tileY)
         {
             PlaceOnGrid(tileX, tileY);
+            Inventory = new Inventory();
         }
 
         public override void Update(GameTime gameTime)
@@ -36,6 +38,11 @@ namespace DeadOrbit
                 dir.Normalize();
                 Position += dir * Speed * dt;
             }
+
+            if (InputSystem.NextItem)
+                Inventory.Next();
+            if (InputSystem.PrevItem)
+                Inventory.Prev();
         }
 
         public void ResolveCollisions(IEnumerable<ICollidable> collidables)

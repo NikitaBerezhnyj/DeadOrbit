@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DeadOrbit.Core;
 using DeadOrbit.Data;
 using DeadOrbit.Entities;
+using DeadOrbit.Systems;
 using DeadOrbit.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,6 +16,8 @@ namespace DeadOrbit.Managers
         private List<BaseStation> _baseStations;
         private List<ResourceNode> _resources;
         private Beacon _beacon;
+
+        private HotbarRenderer _hotbar;
 
         private Texture2D _pixel;
         private int _seed;
@@ -36,6 +39,7 @@ namespace DeadOrbit.Managers
             _resources = world.Resources;
             _beacon = world.Beacon;
             _player = new Player(13, 9);
+            _hotbar = new HotbarRenderer(_player.Inventory, graphicsDevice);
         }
 
         public void Update(GameTime gameTime)
@@ -60,6 +64,7 @@ namespace DeadOrbit.Managers
                 b.Draw(spriteBatch);
             _beacon.Draw(spriteBatch);
             _player.Draw(spriteBatch);
+            _hotbar.Draw(spriteBatch);
         }
     }
 }

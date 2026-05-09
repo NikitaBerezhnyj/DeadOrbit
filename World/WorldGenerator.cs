@@ -43,10 +43,16 @@ namespace DeadOrbit.World
 
                 usedTiles.Add((tx, ty));
 
-                if (rnd.Next(2) == 0)
-                    resources.Add(new CoalNode(tx, ty));
-                else
-                    resources.Add(new StoneNode(tx, ty));
+                int roll = rnd.Next(100);
+
+                ResourceNode resource = roll switch
+                {
+                    < 20 => new CoalNode(tx, ty),
+                    < 50 => new StoneNode(tx, ty),
+                    _ => new WoodNode(tx, ty),
+                };
+
+                resources.Add(resource);
             }
 
             return new WorldData(baseStations, beacon, resources);
