@@ -9,6 +9,8 @@ namespace DeadOrbit
     public class Player : GameObject
     {
         private const float Speed = 160f;
+
+        public Vector2 FacingDirection { get; private set; } = Vector2.Zero;
         public Inventory Inventory { get; private set; }
 
         public Rectangle Bounds =>
@@ -36,6 +38,7 @@ namespace DeadOrbit
             if (dir.LengthSquared() > 0.01f)
             {
                 dir.Normalize();
+                FacingDirection = dir;
                 Position += dir * Speed * dt;
             }
 

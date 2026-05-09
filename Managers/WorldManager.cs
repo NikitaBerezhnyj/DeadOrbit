@@ -15,6 +15,7 @@ namespace DeadOrbit.Managers
         private Player _player;
         private List<BaseStation> _baseStations;
         private List<ResourceNode> _resources;
+        private List<DroppedItem> _droppedItems = new();
         private Beacon _beacon;
 
         private HotbarRenderer _hotbar;
@@ -47,9 +48,18 @@ namespace DeadOrbit.Managers
             _player.Update(gameTime);
 
             var collidables = new List<ICollidable>();
-            collidables.AddRange(_resources);
-
+            collidables.AddRange(_resources.FindAll(r => !r.IsDestroyed));
             _player.ResolveCollisions(collidables);
+
+            if (InputSystem.AttackPressed)
+            {
+                var dropped = InteractionSystem.TryMine(_player, _resources);
+                if (dropped != null)
+                    _droppedItems.Add(dropped);
+            }
+
+            InteractionSystem.TryPickup(_player, _droppedItems);
+            _droppedItems.RemoveAll(d => d.IsPickedUp);
 
             foreach (var b in _baseStations)
                 b.Check(_player);
@@ -62,6 +72,8 @@ namespace DeadOrbit.Managers
                 r.Draw(spriteBatch);
             foreach (var b in _baseStations)
                 b.Draw(spriteBatch);
+            foreach (var d in _droppedItems)
+                d.Draw(spriteBatch);
             _beacon.Draw(spriteBatch);
             _player.Draw(spriteBatch);
             _hotbar.Draw(spriteBatch);

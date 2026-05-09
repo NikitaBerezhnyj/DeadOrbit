@@ -9,6 +9,7 @@ namespace DeadOrbit.Entities
         public int HP;
         public bool IsDestroyed => HP <= 0;
         public bool BlocksMovement => !IsDestroyed;
+        public abstract InventoryItem GetDrop();
 
         public Rectangle Bounds =>
             new Rectangle((int)Position.X, (int)Position.Y, TileGrid.TileSize, TileGrid.TileSize);

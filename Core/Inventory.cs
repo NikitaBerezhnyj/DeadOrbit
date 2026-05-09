@@ -54,6 +54,32 @@ namespace DeadOrbit.Core
                 );
         }
 
+        public bool TryAdd(InventoryItem incoming)
+        {
+            foreach (var slot in Slots)
+            {
+                if (!slot.IsEmpty && slot.Name == incoming.Name && slot.Type == ItemType.Resource)
+                {
+                    slot.Count += incoming.Count;
+                    Console.WriteLine($"[INV] {incoming.Name}: тепер {slot.Count}");
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < Size; i++)
+            {
+                if (Slots[i].IsEmpty)
+                {
+                    Slots[i] = incoming;
+                    Console.WriteLine($"[INV] Новий слот: {incoming.Name}");
+                    return true;
+                }
+            }
+
+            Console.WriteLine("[INV] Інвентар повний!");
+            return false;
+        }
+
         public void Next()
         {
             ActiveIndex = (ActiveIndex + 1) % Size;
