@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,74 +8,39 @@ namespace DeadOrbit
 {
     public class Player : GameObject
     {
-        private float Speed = 250f;
+        private const float Speed = 160f;
 
-        public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 20, 20);
+        public Rectangle Bounds =>
+            new Rectangle(
+                (int)Position.X + 4,
+                (int)Position.Y + 4,
+                TileGrid.TileSize - 8,
+                TileGrid.TileSize - 8
+            );
 
-        public Player(Vector2 startPosition)
+        public GridPosition GridPos =>
+            TileGrid.ToGrid(Position + new Vector2(TileGrid.TileSize / 2f));
+
+        public Player(int tileX, int tileY)
         {
-            Position = startPosition;
+            PlaceOnGrid(tileX, tileY);
         }
 
         public override void Update(GameTime gameTime)
         {
-            Vector2 direction = InputSystem.GetMovementDirection();
-            Position += direction * Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Vector2 dir = InputSystem.GetMovementDirection();
 
-            if (InputSystem.AttackPressed)
+            if (dir.LengthSquared() > 0.01f)
             {
-                Console.WriteLine("[PLAYER] Attack / Mine");
+                dir.Normalize();
+                Position += dir * Speed * dt;
             }
+        }
 
-            if (InputSystem.UsePressed)
-            {
-                Console.WriteLine("[PLAYER] Use / Place");
-            }
-
-            if (InputSystem.DropPressed)
-            {
-                Console.WriteLine("[PLAYER] Drop item");
-            }
-
-            if (InputSystem.PausePressed)
-            {
-                Console.WriteLine("[GAME] Pause triggered");
-            }
-
-            if (InputSystem.CraftPressed)
-            {
-                Console.WriteLine("[UI] Craft menu opened");
-            }
-
-            if (InputSystem.NextItem)
-            {
-                Console.WriteLine($"[INVENTORY] +");
-            }
-
-            if (InputSystem.PrevItem)
-            {
-                Console.WriteLine($"[INVENTORY] -");
-            }
-
-            if (InputSystem.UiUp)
-            {
-                Console.WriteLine("[UI] Navigate UP");
-            }
-
-            if (InputSystem.UiDown)
-            {
-                Console.WriteLine("[UI] Navigate DOWN");
-            }
-
-            if (InputSystem.UiLeft)
-            {
-                Console.WriteLine("[UI] Navigate LEFT");
-            }
-
-            if (InputSystem.UiRight)
-            {
-                Console.WriteLine("[UI] Navigate RIGHT");
-            }
+        public void ResolveCollisions(IEnumerable<ICollidable> collidables)
+        {
+            CollisionSystem.Resolve(ref Position, Bounds, collidables);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

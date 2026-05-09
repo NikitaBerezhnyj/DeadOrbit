@@ -40,7 +40,7 @@ To get started with DeadOrbit, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/DeadOrbit.git
+   git clone https://github.com/NikitaBerezhnyj/DeadOrbit.git
    ```
 
 2. Navigate into the project directory:
