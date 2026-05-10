@@ -66,6 +66,9 @@ namespace DeadOrbit
                 Inventory.Next();
             if (InputSystem.PrevItem)
                 Inventory.Prev();
+
+            Position.X = MathHelper.Clamp(Position.X, 0, TileGrid.WorldPixelW - TileGrid.TileSize);
+            Position.Y = MathHelper.Clamp(Position.Y, 0, TileGrid.WorldPixelH - TileGrid.TileSize);
         }
 
         public void ResolveCollisions(IEnumerable<ICollidable> collidables)

@@ -43,14 +43,8 @@ namespace DeadOrbit
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Green);
-
-            _spriteBatch.Begin();
-
+            GraphicsDevice.Clear(Color.Black);
             _world.Draw(_spriteBatch);
-
-            _spriteBatch.End();
-
             base.Draw(gameTime);
         }
     }

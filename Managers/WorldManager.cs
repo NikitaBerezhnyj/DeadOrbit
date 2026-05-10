@@ -13,6 +13,7 @@ namespace DeadOrbit.Managers
     public class WorldManager
     {
         private Player _player;
+        private Camera _camera;
         private List<BaseStation> _baseStations;
         private List<ResourceNode> _resources;
         private List<DroppedItem> _droppedItems = new();
@@ -43,6 +44,7 @@ namespace DeadOrbit.Managers
             _beacon = world.Beacon;
             _enemies = world.Enemies;
             _player = new Player(13, 9);
+            _camera = new Camera(graphicsDevice);
             _hotbar = new HotbarRenderer(_player.Inventory, graphicsDevice);
             _healthRenderer = new PlayerHealthRenderer(_player);
         }
@@ -93,6 +95,16 @@ namespace DeadOrbit.Managers
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            Matrix transform = _camera.GetTransform(_player.Position);
+
+            spriteBatch.Begin(transformMatrix: transform);
+
+            spriteBatch.Draw(
+                GameResources.Pixel,
+                new Rectangle(0, 0, TileGrid.WorldPixelW, TileGrid.WorldPixelH),
+                new Color(34, 85, 34)
+            );
+
             foreach (var r in _resources)
                 r.Draw(spriteBatch);
             foreach (var b in _baseStations)
@@ -103,8 +115,12 @@ namespace DeadOrbit.Managers
                 e.Draw(spriteBatch);
             _beacon.Draw(spriteBatch);
             _player.Draw(spriteBatch);
+            spriteBatch.End();
+
+            spriteBatch.Begin();
             _hotbar.Draw(spriteBatch);
             _healthRenderer.Draw(spriteBatch);
+            spriteBatch.End();
         }
     }
 }
