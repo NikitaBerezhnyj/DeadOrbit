@@ -26,6 +26,8 @@ namespace DeadOrbit.Managers
         private List<Enemy> _enemies;
         private Beacon _beacon;
 
+        private readonly ParticleSystem _particles = new();
+
         private HotbarRenderer _hotbar;
         private PlayerHealthRenderer _healthRenderer;
 
@@ -99,9 +101,14 @@ namespace DeadOrbit.Managers
             playerCollidables.AddRange(_enemies.FindAll(e => !e.IsDefeated));
             _player.ResolveCollisions(playerCollidables);
 
+            foreach (var r in _resources)
+                r.Update(gameTime);
+
+            _particles.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             if (InputSystem.UsePressed)
             {
-                var drop = InteractionSystem.TryMine(_player, _resources);
+                var drop = InteractionSystem.TryMine(_player, _resources, _particles);
 
                 if (drop != null)
                 {
@@ -163,6 +170,7 @@ namespace DeadOrbit.Managers
             foreach (var e in _enemies)
                 e.Draw(spriteBatch);
             _beacon.Draw(spriteBatch);
+            _particles.Draw(spriteBatch);
             _player.Draw(spriteBatch);
             spriteBatch.End();
 

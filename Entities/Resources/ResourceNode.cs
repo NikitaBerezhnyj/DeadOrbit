@@ -9,8 +9,10 @@ namespace DeadOrbit.Entities
     public abstract class ResourceNode : GameObject, ICollidable
     {
         public int HP;
+        private GameTime _lastGameTime;
         public bool IsDestroyed => HP <= 0;
         public bool BlocksMovement => !IsDestroyed;
+        private readonly ShakeEffect _shake = new();
         public abstract InventoryItem GetDrop();
 
         public Rectangle Bounds =>
@@ -27,8 +29,16 @@ namespace DeadOrbit.Entities
 
         public void Mine(int damage)
         {
-            if (!IsDestroyed)
-                HP -= damage;
+            if (IsDestroyed)
+                return;
+            HP -= damage;
+            _shake.Trigger(intensity: 3f);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            _lastGameTime = gameTime;
+            _shake.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -38,5 +48,8 @@ namespace DeadOrbit.Entities
 
             spriteBatch.Draw(GameResources.Pixel, Bounds, NodeColor);
         }
+
+        protected Vector2 GetShakeOffset() =>
+            _lastGameTime == null ? Vector2.Zero : _shake.GetOffset(_lastGameTime);
     }
 }

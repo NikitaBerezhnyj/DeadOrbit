@@ -11,7 +11,11 @@ namespace DeadOrbit.Systems
     {
         private const float InteractRange = TileGrid.TileSize * 1.2f;
 
-        public static DroppedItem TryMine(Player player, IEnumerable<ResourceNode> nodes)
+        public static DroppedItem TryMine(
+            Player player,
+            IEnumerable<ResourceNode> nodes,
+            ParticleSystem particles = null
+        )
         {
             var target = FindTarget(player, nodes);
             if (target == null)
@@ -27,13 +31,16 @@ namespace DeadOrbit.Systems
             }
 
             target.Mine(1);
-            Console.WriteLine($"[MINE] {target.GetType().Name} HP: {target.HP}");
+
+            if (particles != null && held == "Pickaxe")
+            {
+                var center = target.Position + new Vector2(TileGrid.TileSize / 2f);
+                var color = target is CoalNode ? Color.DarkGray : Color.SlateGray;
+                particles.Emit(center, color, count: 8);
+            }
 
             if (target.IsDestroyed)
-            {
-                Console.WriteLine($"[MINE] {target.GetType().Name} знищено!");
                 return new DroppedItem(target.Position, target.GetDrop());
-            }
 
             return null;
         }
