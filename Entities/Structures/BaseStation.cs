@@ -1,21 +1,24 @@
+using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Structures
 {
     public class BaseStation : GameObject
     {
-        public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 40, 40);
+        public Rectangle Bounds =>
+            new Rectangle((int)Position.X, (int)Position.Y, TileGrid.TileSize, TileGrid.TileSize);
+
         public bool IsActivated;
 
-        public BaseStation(Vector2 position)
+        public BaseStation(int tileX, int tileY)
         {
-            Position = position;
+            PlaceOnGrid(tileX, tileY);
         }
 
         public void Check(Player player)
         {
-            if (player.Bounds.Intersects(Bounds))
+            if (player.GridPos == GridPos)
                 IsActivated = true;
         }
 

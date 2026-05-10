@@ -1,18 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
+using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Structures
 {
     public class Beacon : GameObject
     {
-        public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 50, 50);
+        public Rectangle Bounds =>
+            new Rectangle((int)Position.X, (int)Position.Y, TileGrid.TileSize, TileGrid.TileSize);
         public bool IsReady;
 
-        public Beacon(Vector2 position)
+        public Beacon(int tileX, int tileY)
         {
-            Position = position;
+            PlaceOnGrid(tileX, tileY);
         }
 
         public void Check(List<BaseStation> bases)

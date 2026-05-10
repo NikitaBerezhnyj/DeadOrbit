@@ -1,4 +1,9 @@
 using System;
+using System.Collections.Generic;
+using DeadOrbit.Core;
+using DeadOrbit.Interfaces;
+using DeadOrbit.Managers;
+using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,73 +11,85 @@ namespace DeadOrbit
 {
     public class Player : GameObject
     {
-        private float Speed = 250f;
+        private const float Speed = 160f;
 
-        public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, 20, 20);
+        public int HP { get; private set; } = 10;
+        public int MaxHP { get; private set; } = 10;
+        private float _stunTimer = 0f;
+        private Vector2 _knockbackVelocity = Vector2.Zero;
+        private const float KnockbackDecay = 10f;
+        public bool IsStunned => _stunTimer > 0;
 
-        public Player(Vector2 startPosition)
+        public Vector2 FacingDirection { get; private set; } = Vector2.Zero;
+        public InventoryManager InventoryManager { get; private set; }
+
+        public Rectangle Bounds =>
+            new Rectangle(
+                (int)Position.X + 4,
+                (int)Position.Y + 4,
+                TileGrid.TileSize - 8,
+                TileGrid.TileSize - 8
+            );
+
+        public Player(int tileX, int tileY)
         {
-            Position = startPosition;
+            PlaceOnGrid(tileX, tileY);
+            InventoryManager = new InventoryManager();
         }
 
         public override void Update(GameTime gameTime)
         {
-            Vector2 direction = InputSystem.GetMovementDirection();
-            Position += direction * Speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (InputSystem.AttackPressed)
+            if (_knockbackVelocity.LengthSquared() > 1f)
             {
-                Console.WriteLine("[PLAYER] Attack / Mine");
+                Position += _knockbackVelocity * dt;
+                _knockbackVelocity -= _knockbackVelocity * KnockbackDecay * dt;
             }
 
-            if (InputSystem.UsePressed)
+            if (_stunTimer > 0)
             {
-                Console.WriteLine("[PLAYER] Use / Place");
+                _stunTimer -= dt;
+                return;
             }
 
-            if (InputSystem.DropPressed)
-            {
-                Console.WriteLine("[PLAYER] Drop item");
-            }
+            Vector2 dir = InputSystem.GetMovementDirection();
 
-            if (InputSystem.PausePressed)
+            if (dir.LengthSquared() > 0.01f)
             {
-                Console.WriteLine("[GAME] Pause triggered");
-            }
-
-            if (InputSystem.CraftPressed)
-            {
-                Console.WriteLine("[UI] Craft menu opened");
+                dir.Normalize();
+                FacingDirection = dir;
+                Position += dir * Speed * dt;
             }
 
             if (InputSystem.NextItem)
-            {
-                Console.WriteLine($"[INVENTORY] +");
-            }
-
+                InventoryManager.Next();
             if (InputSystem.PrevItem)
-            {
-                Console.WriteLine($"[INVENTORY] -");
-            }
+                InventoryManager.Prev();
 
-            if (InputSystem.UiUp)
-            {
-                Console.WriteLine("[UI] Navigate UP");
-            }
+            Position.X = MathHelper.Clamp(Position.X, 0, TileGrid.WorldPixelW - TileGrid.TileSize);
+            Position.Y = MathHelper.Clamp(Position.Y, 0, TileGrid.WorldPixelH - TileGrid.TileSize);
+        }
 
-            if (InputSystem.UiDown)
-            {
-                Console.WriteLine("[UI] Navigate DOWN");
-            }
+        public void ResolveCollisions(IEnumerable<ICollidable> collidables)
+        {
+            CollisionSystem.Resolve(ref Position, Bounds, collidables);
+        }
 
-            if (InputSystem.UiLeft)
-            {
-                Console.WriteLine("[UI] Navigate LEFT");
-            }
+        public void TakeDamage(int amount, Vector2 knockbackDir)
+        {
+            HP -= amount;
+            _stunTimer = 0.5f;
+            _knockbackVelocity = knockbackDir * 150f;
 
-            if (InputSystem.UiRight)
+            if (HP <= 0)
             {
-                Console.WriteLine("[UI] Navigate RIGHT");
+                HP = MaxHP;
+                Console.WriteLine("[GAME] GAME OVER — HP reset");
+            }
+            else
+            {
+                Console.WriteLine($"[PLAYER] HP: {HP}/{MaxHP}");
             }
         }
 
