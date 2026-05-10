@@ -10,6 +10,6 @@ namespace DeadOrbit.Entities
             : base(tileX, tileY, hp: 3, Color.SaddleBrown) { }
 
         public override InventoryItem GetDrop() =>
-            new InventoryItem("Wood", ItemType.Resource, 1, Color.SandyBrown);
+            new InventoryItem("Wood", ItemType.Resource, 1, Color.SandyBrown, SpriteSourceMap.Wood);
     }
 }

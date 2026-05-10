@@ -1,4 +1,5 @@
 using DeadOrbit.Managers;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -63,16 +64,51 @@ namespace DeadOrbit.Systems
                 var item = _inventory.Slots[i];
                 if (!item.IsEmpty)
                 {
-                    DrawRect(
-                        spriteBatch,
-                        new Rectangle(
-                            x + IconPadding,
-                            startY + IconPadding,
-                            SlotSize - IconPadding * 2,
-                            SlotSize - IconPadding * 2
-                        ),
-                        item.Color
+                    var iconRect = new Rectangle(
+                        x + IconPadding,
+                        startY + IconPadding,
+                        SlotSize - IconPadding * 2,
+                        SlotSize - IconPadding * 2
                     );
+
+                    if (item.SpriteSource.HasValue)
+                        spriteBatch.Draw(
+                            GameResources.Tileset,
+                            iconRect,
+                            item.SpriteSource.Value,
+                            Color.White
+                        );
+                    else
+                        DrawRect(spriteBatch, iconRect, item.Color);
+
+                    if (
+                        item.Type == ItemType.Resource
+                        && item.Count > 1
+                        && GameResources.DefaultFont != null
+                    )
+                    {
+                        string countText = item.Count.ToString();
+                        Vector2 textSize = GameResources.DefaultFont.MeasureString(countText);
+
+                        var textPos = new Vector2(
+                            x + SlotSize - textSize.X - 3,
+                            startY + SlotSize - textSize.Y - 3
+                        );
+
+                        spriteBatch.DrawString(
+                            GameResources.DefaultFont,
+                            countText,
+                            textPos + new Vector2(1, 1),
+                            Color.Black * 0.8f
+                        );
+
+                        spriteBatch.DrawString(
+                            GameResources.DefaultFont,
+                            countText,
+                            textPos,
+                            Color.White
+                        );
+                    }
                 }
             }
         }
