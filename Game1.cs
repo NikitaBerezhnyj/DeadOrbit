@@ -29,8 +29,7 @@ namespace DeadOrbit
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            _world.Load(GraphicsDevice);
+            _world.Load(GraphicsDevice, Content);
         }
 
         protected override void Update(GameTime gameTime)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DeadOrbit.Core;
 using DeadOrbit.Entities;
 using DeadOrbit.Entities.Enemies;
 using DeadOrbit.Entities.Structures;
@@ -21,16 +22,49 @@ namespace DeadOrbit.Managers
         public static WorldData Generate(int seed)
         {
             var rnd = new Random(seed);
-
             var usedTiles = new HashSet<(int x, int y)>();
 
+            var tileMap = GenerateTileMap(rnd);
             var baseStations = GenerateBaseStations(rnd, usedTiles);
             var resources = GenerateResources(rnd, usedTiles);
             var enemies = GenerateEnemies(rnd, usedTiles);
-
             var beacon = new Beacon(WorldWidth / 2, 1);
 
-            return new WorldData(baseStations, beacon, resources, enemies);
+            return new WorldData(baseStations, beacon, resources, enemies, tileMap);
+        }
+
+        private static int GetGroundVariant(Random rnd)
+        {
+            int roll = rnd.Next(100);
+            return roll switch
+            {
+                < 85 => 0,
+                < 90 => 1,
+                < 95 => 2,
+                _ => 3,
+            };
+        }
+
+        private static TileMap GenerateTileMap(Random rnd)
+        {
+            var map = new TileMap(WorldWidth, WorldHeight);
+
+            for (int x = 0; x < WorldWidth; x++)
+            for (int y = 0; y < WorldHeight; y++)
+                map.Set(x, y, TileType.Ground, GetGroundVariant(rnd));
+
+            for (int x = 0; x < WorldWidth; x++)
+            {
+                map.Set(x, 0, TileType.Wall, rnd.Next(4));
+                map.Set(x, WorldHeight - 1, TileType.Wall, rnd.Next(4));
+            }
+            for (int y = 0; y < WorldHeight; y++)
+            {
+                map.Set(0, y, TileType.Wall, rnd.Next(4));
+                map.Set(WorldWidth - 1, y, TileType.Wall, rnd.Next(4));
+            }
+
+            return map;
         }
 
         private static List<BaseStation> GenerateBaseStations(

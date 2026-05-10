@@ -1,3 +1,4 @@
+using System;
 using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,10 +18,12 @@ namespace DeadOrbit.Rendering
         {
             int screenW = _graphics.Viewport.Width;
             int screenH = _graphics.Viewport.Height;
-
             Vector2 center = targetPosition + new Vector2(TileGrid.TileSize / 2f);
 
-            return Matrix.CreateTranslation(screenW / 2f - center.X, screenH / 2f - center.Y, 0);
+            float offsetX = MathF.Round(screenW / 2f - center.X);
+            float offsetY = MathF.Round(screenH / 2f - center.Y);
+
+            return Matrix.CreateTranslation(offsetX, offsetY, 0);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using DeadOrbit.Core;
 using DeadOrbit.Models;
 
 namespace DeadOrbit.Managers
@@ -19,37 +20,43 @@ namespace DeadOrbit.Managers
                 "Axe",
                 ItemType.Tool,
                 1,
-                Microsoft.Xna.Framework.Color.SandyBrown
+                Microsoft.Xna.Framework.Color.SandyBrown,
+                SpriteSourceMap.Axe
             );
             Slots[1] = new InventoryItem(
                 "Pickaxe",
                 ItemType.Tool,
                 1,
-                Microsoft.Xna.Framework.Color.LightGray
+                Microsoft.Xna.Framework.Color.LightGray,
+                SpriteSourceMap.Pickaxe
             );
             Slots[2] = new InventoryItem(
                 "Sword",
                 ItemType.Weapon,
                 1,
-                Microsoft.Xna.Framework.Color.WhiteSmoke
+                Microsoft.Xna.Framework.Color.WhiteSmoke,
+                SpriteSourceMap.Sword
             );
             Slots[3] = new InventoryItem(
                 "Coal",
                 ItemType.Resource,
                 3,
-                Microsoft.Xna.Framework.Color.DarkGray
+                Microsoft.Xna.Framework.Color.DarkGray,
+                SpriteSourceMap.Coal
             );
             Slots[4] = new InventoryItem(
                 "Stone",
                 ItemType.Resource,
                 5,
-                Microsoft.Xna.Framework.Color.SlateGray
+                Microsoft.Xna.Framework.Color.SlateGray,
+                SpriteSourceMap.Stone
             );
             Slots[5] = new InventoryItem(
                 "Wood",
                 ItemType.Resource,
                 2,
-                Microsoft.Xna.Framework.Color.SaddleBrown
+                Microsoft.Xna.Framework.Color.SaddleBrown,
+                SpriteSourceMap.Wood
             );
 
             for (int i = 0; i < Size; i++)
