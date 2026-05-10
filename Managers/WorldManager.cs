@@ -23,6 +23,8 @@ namespace DeadOrbit.Managers
         private HotbarRenderer _hotbar;
         private PlayerHealthRenderer _healthRenderer;
 
+        private HashSet<GridPosition> _blockedTiles = new();
+
         private Texture2D _pixel;
         private int _seed;
 
@@ -47,34 +49,52 @@ namespace DeadOrbit.Managers
             _camera = new Camera(graphicsDevice);
             _hotbar = new HotbarRenderer(_player.Inventory, graphicsDevice);
             _healthRenderer = new PlayerHealthRenderer(_player);
+
+            RebuildBlockedTiles();
         }
 
         public void Update(GameTime gameTime)
         {
             _player.Update(gameTime);
 
+            var staticCollidables = new List<ICollidable>();
+
+            staticCollidables.AddRange(_resources.FindAll(r => !r.IsDestroyed));
+
             foreach (var enemy in _enemies)
             {
                 enemy.Update(gameTime);
-                if (!enemy.IsDefeated)
-                {
-                    var drop = enemy.UpdateAI(gameTime, _player);
-                    if (drop != null)
-                        _droppedItems.Add(drop);
-                }
+
+                if (enemy.IsDefeated)
+                    continue;
+
+                var drop = enemy.UpdateAI(gameTime, _player, _blockedTiles);
+
+                if (drop != null)
+                    _droppedItems.Add(drop);
+
+                var enemyCollidables = new List<ICollidable>(staticCollidables);
+
+                enemyCollidables.AddRange(_enemies.FindAll(e => e != enemy && !e.IsDefeated));
+
+                enemy.ResolveCollisions(enemyCollidables);
             }
 
-            var collidables = new List<ICollidable>();
-            collidables.AddRange(_resources.FindAll(r => !r.IsDestroyed));
-            collidables.AddRange(_enemies.FindAll(e => !e.IsDefeated));
-            _player.ResolveCollisions(collidables);
+            var playerCollidables = new List<ICollidable>(staticCollidables);
+
+            playerCollidables.AddRange(_enemies.FindAll(e => !e.IsDefeated));
+
+            _player.ResolveCollisions(playerCollidables);
 
             if (InputSystem.UsePressed)
             {
                 var drop = InteractionSystem.TryMine(_player, _resources);
 
                 if (drop != null)
+                {
                     _droppedItems.Add(drop);
+                    RebuildBlockedTiles();
+                }
             }
 
             if (InputSystem.AttackPressed)
@@ -86,10 +106,12 @@ namespace DeadOrbit.Managers
             }
 
             InteractionSystem.TryPickup(_player, _droppedItems);
+
             _droppedItems.RemoveAll(d => d.IsPickedUp);
 
-            foreach (var b in _baseStations)
-                b.Check(_player);
+            foreach (var station in _baseStations)
+                station.Check(_player);
+
             _beacon.Check(_baseStations);
         }
 
@@ -121,6 +143,17 @@ namespace DeadOrbit.Managers
             _hotbar.Draw(spriteBatch);
             _healthRenderer.Draw(spriteBatch);
             spriteBatch.End();
+        }
+
+        private void RebuildBlockedTiles()
+        {
+            _blockedTiles.Clear();
+            foreach (var r in _resources)
+                if (!r.IsDestroyed)
+                    _blockedTiles.Add(r.GridPos);
+            foreach (var b in _baseStations)
+                _blockedTiles.Add(b.GridPos);
+            _blockedTiles.Add(_beacon.GridPos);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DeadOrbit.Core;
 using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
@@ -21,6 +22,11 @@ namespace DeadOrbit.Entities
         public float Speed;
         public bool IsDefeated => HP <= 0;
         public bool BlocksMovement => !IsDefeated;
+
+        private List<GridPosition> _path = null;
+        private int _pathIndex = 0;
+        private float _pathUpdateTimer = 0f;
+        private const float PathUpdateInterval = 0.5f;
 
         public Rectangle Bounds =>
             new Rectangle((int)Position.X, (int)Position.Y, TileGrid.TileSize, TileGrid.TileSize);
@@ -80,7 +86,7 @@ namespace DeadOrbit.Entities
             _attackTimer -= dt;
         }
 
-        public DroppedItem UpdateAI(GameTime gameTime, Player player)
+        public DroppedItem UpdateAI(GameTime gameTime, Player player, HashSet<GridPosition> blocked)
         {
             if (IsDefeated)
                 return null;
@@ -104,20 +110,17 @@ namespace DeadOrbit.Entities
                     if (dist > AggroRange)
                     {
                         State = EnemyState.Idle;
-                        Console.WriteLine($"[AI] {GetType().Name} → Idle (втратив)");
+                        _path = null;
                         break;
                     }
                     if (dist <= AttackRange)
                     {
                         State = EnemyState.Attack;
+                        _path = null;
                         break;
                     }
 
-                    if (_stunTimer <= 0)
-                    {
-                        var dir = Vector2.Normalize(playerCenter - center);
-                        Position += dir * Speed * dt;
-                    }
+                    MoveAlongPath(gameTime, player, blocked);
                     break;
 
                 case EnemyState.Attack:
@@ -142,6 +145,38 @@ namespace DeadOrbit.Entities
             return null;
         }
 
+        private void MoveAlongPath(GameTime gameTime, Player player, HashSet<GridPosition> blocked)
+        {
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _pathUpdateTimer -= dt;
+
+            if (_pathUpdateTimer <= 0f || _path == null)
+            {
+                _pathUpdateTimer = PathUpdateInterval;
+                _path = Pathfinder.FindPath(GridPos, player.GridPos, blocked);
+                _pathIndex = 1;
+            }
+
+            if (_path == null || _pathIndex >= _path.Count)
+                return;
+
+            Vector2 target = TileGrid.ToWorld(_path[_pathIndex]);
+            Vector2 center = Position + new Vector2(TileGrid.TileSize / 2f);
+            Vector2 targetCenter = target + new Vector2(TileGrid.TileSize / 2f);
+            Vector2 dir = targetCenter - center;
+
+            if (dir.Length() < 2f)
+            {
+                _pathIndex++;
+            }
+            else
+            {
+                dir.Normalize();
+                Position += dir * Speed * dt;
+            }
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (IsDefeated)
@@ -164,6 +199,11 @@ namespace DeadOrbit.Entities
                 new Rectangle(barX, barY, (int)(barW * ratio), barH),
                 Color.Red
             );
+        }
+
+        public void ResolveCollisions(IEnumerable<ICollidable> collidables)
+        {
+            CollisionSystem.Resolve(ref Position, Bounds, collidables);
         }
 
         protected virtual Color GetBodyColor() => Color.Purple;
