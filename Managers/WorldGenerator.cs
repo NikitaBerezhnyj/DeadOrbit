@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
-using DeadOrbit.Data;
 using DeadOrbit.Entities;
+using DeadOrbit.Entities.Enemies;
+using DeadOrbit.Entities.Structures;
+using DeadOrbit.Models;
 
-namespace DeadOrbit.World
+namespace DeadOrbit.Managers
 {
     public static class WorldGenerator
     {

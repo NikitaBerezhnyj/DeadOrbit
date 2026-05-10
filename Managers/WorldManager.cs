@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
-using DeadOrbit.Data;
 using DeadOrbit.Entities;
+using DeadOrbit.Entities.Enemies;
+using DeadOrbit.Entities.Items;
+using DeadOrbit.Entities.Structures;
+using DeadOrbit.Interfaces;
+using DeadOrbit.Rendering;
 using DeadOrbit.Systems;
-using DeadOrbit.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -47,7 +50,7 @@ namespace DeadOrbit.Managers
             _enemies = world.Enemies;
             _player = new Player(13, 9);
             _camera = new Camera(graphicsDevice);
-            _hotbar = new HotbarRenderer(_player.Inventory, graphicsDevice);
+            _hotbar = new HotbarRenderer(_player.InventoryManager, graphicsDevice);
             _healthRenderer = new PlayerHealthRenderer(_player);
 
             RebuildBlockedTiles();
@@ -71,7 +74,10 @@ namespace DeadOrbit.Managers
                 var drop = enemy.UpdateAI(gameTime, _player, _blockedTiles);
 
                 if (drop != null)
+                {
                     _droppedItems.Add(drop);
+                    Console.WriteLine($"[DROP] Додано {drop.Item.Name} на {drop.Position}");
+                }
 
                 var enemyCollidables = new List<ICollidable>(staticCollidables);
 
@@ -93,6 +99,7 @@ namespace DeadOrbit.Managers
                 if (drop != null)
                 {
                     _droppedItems.Add(drop);
+                    Console.WriteLine($"[DROP] Mining drop: {drop.Item.Name} на {drop.Position}");
                     RebuildBlockedTiles();
                 }
             }
@@ -105,8 +112,25 @@ namespace DeadOrbit.Managers
                     _droppedItems.Add(drop);
             }
 
-            InteractionSystem.TryPickup(_player, _droppedItems);
+            _droppedItems.RemoveAll(d => d.IsPickedUp);
 
+            foreach (var d in _droppedItems)
+            {
+                d.Update(gameTime);
+                d.UpdateAttraction(gameTime, _player.Position);
+            }
+
+            foreach (var d in _droppedItems)
+            {
+                if (d.IsPickedUp || d.PickupDelay > 0)
+                    continue;
+                if (d.IsInPickupRange(_player.Position))
+                {
+                    _player.InventoryManager.TryAdd(d.Item);
+                    d.IsPickedUp = true;
+                    Console.WriteLine($"[PICKUP] Підібрано: {d.Item}");
+                }
+            }
             _droppedItems.RemoveAll(d => d.IsPickedUp);
 
             foreach (var station in _baseStations)

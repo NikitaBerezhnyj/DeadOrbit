@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using DeadOrbit.Entities;
+using DeadOrbit.Entities.Enemies;
+using DeadOrbit.Entities.Structures;
 
-namespace DeadOrbit.Data
+namespace DeadOrbit.Models
 {
     public class WorldData
     {

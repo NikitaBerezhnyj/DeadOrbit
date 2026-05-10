@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
+using DeadOrbit.Entities.Items;
+using DeadOrbit.Interfaces;
+using DeadOrbit.Models;
 using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Enemies
 {
     public enum EnemyState
     {
@@ -154,7 +157,7 @@ namespace DeadOrbit.Entities
             if (_pathUpdateTimer <= 0f || _path == null)
             {
                 _pathUpdateTimer = PathUpdateInterval;
-                _path = Pathfinder.FindPath(GridPos, player.GridPos, blocked);
+                _path = PathfinderSystem.FindPath(GridPos, player.GridPos, blocked);
                 _pathIndex = 1;
             }
 

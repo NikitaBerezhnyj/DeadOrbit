@@ -1,7 +1,8 @@
 using DeadOrbit.Core;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Enemies
 {
     public class Beetle : Enemy
     {

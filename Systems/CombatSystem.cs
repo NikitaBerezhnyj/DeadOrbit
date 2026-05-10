@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
 using DeadOrbit.Entities;
+using DeadOrbit.Entities.Enemies;
+using DeadOrbit.Entities.Items;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Systems
@@ -29,7 +32,7 @@ namespace DeadOrbit.Systems
 
         private static bool CanAttack(Player player)
         {
-            return player.Inventory.ActiveItem?.Type == ItemType.Weapon;
+            return player.InventoryManager.ActiveItem?.Type == ItemType.Weapon;
         }
 
         private static Enemy FindTarget(Player player, List<Enemy> enemies)

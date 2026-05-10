@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using DeadOrbit.Interfaces;
 using Microsoft.Xna.Framework;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Systems
 {
     public static class CollisionSystem
     {

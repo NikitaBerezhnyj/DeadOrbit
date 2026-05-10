@@ -1,4 +1,6 @@
 using DeadOrbit.Core;
+using DeadOrbit.Interfaces;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

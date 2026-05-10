@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Interfaces
 {
     public interface ICollidable
     {

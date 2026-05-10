@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using DeadOrbit.Core;
-using DeadOrbit.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Structures
 {
     public class Beacon : GameObject
     {

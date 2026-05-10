@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
 using DeadOrbit.Entities;
+using DeadOrbit.Entities.Items;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Systems
@@ -17,7 +18,7 @@ namespace DeadOrbit.Systems
                 return null;
 
             string required = GetRequiredTool(target);
-            string held = player.Inventory.ActiveItem?.Name ?? "";
+            string held = player.InventoryManager.ActiveItem?.Name ?? "";
 
             if (held != required)
             {
@@ -35,27 +36,6 @@ namespace DeadOrbit.Systems
             }
 
             return null;
-        }
-
-        public static void TryPickup(Player player, List<DroppedItem> items)
-        {
-            var playerCenter = player.Position + new Vector2(TileGrid.TileSize / 2f);
-
-            foreach (var item in items)
-            {
-                if (item.IsPickedUp)
-                    continue;
-
-                var itemCenter = item.Position + new Vector2(TileGrid.TileSize / 2f);
-                float dist = Vector2.Distance(playerCenter, itemCenter);
-
-                if (dist < TileGrid.TileSize * 1.5f)
-                {
-                    player.Inventory.TryAdd(item.Item);
-                    item.IsPickedUp = true;
-                    Console.WriteLine($"[PICKUP] Підібрано: {item.Item}");
-                }
-            }
         }
 
         private static ResourceNode FindTarget(Player player, IEnumerable<ResourceNode> nodes)

@@ -1,7 +1,8 @@
+using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Rendering
 {
     public class Camera
     {

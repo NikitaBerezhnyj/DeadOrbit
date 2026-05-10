@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+using DeadOrbit.Core;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Systems
 {
-    public static class Pathfinder
+    public static class PathfinderSystem
     {
         private class Node
         {

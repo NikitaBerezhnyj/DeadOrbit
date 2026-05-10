@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
+using DeadOrbit.Interfaces;
+using DeadOrbit.Managers;
+using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -18,7 +21,7 @@ namespace DeadOrbit
         public bool IsStunned => _stunTimer > 0;
 
         public Vector2 FacingDirection { get; private set; } = Vector2.Zero;
-        public Inventory Inventory { get; private set; }
+        public InventoryManager InventoryManager { get; private set; }
 
         public Rectangle Bounds =>
             new Rectangle(
@@ -28,13 +31,10 @@ namespace DeadOrbit
                 TileGrid.TileSize - 8
             );
 
-        public GridPosition GridPos =>
-            TileGrid.ToGrid(Position + new Vector2(TileGrid.TileSize / 2f));
-
         public Player(int tileX, int tileY)
         {
             PlaceOnGrid(tileX, tileY);
-            Inventory = new Inventory();
+            InventoryManager = new InventoryManager();
         }
 
         public override void Update(GameTime gameTime)
@@ -63,9 +63,9 @@ namespace DeadOrbit
             }
 
             if (InputSystem.NextItem)
-                Inventory.Next();
+                InventoryManager.Next();
             if (InputSystem.PrevItem)
-                Inventory.Prev();
+                InventoryManager.Prev();
 
             Position.X = MathHelper.Clamp(Position.X, 0, TileGrid.WorldPixelW - TileGrid.TileSize);
             Position.Y = MathHelper.Clamp(Position.Y, 0, TileGrid.WorldPixelH - TileGrid.TileSize);

@@ -2,7 +2,7 @@ using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Structures
 {
     public class BaseStation : GameObject
     {

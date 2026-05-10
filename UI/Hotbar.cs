@@ -1,4 +1,4 @@
-using DeadOrbit.Core;
+using DeadOrbit.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -12,10 +12,10 @@ namespace DeadOrbit.Systems
         private const int IconPadding = 6;
         private const int BarPadding = 10;
 
-        private readonly Inventory _inventory;
+        private readonly InventoryManager _inventory;
         private readonly GraphicsDevice _graphics;
 
-        public HotbarRenderer(Inventory inventory, GraphicsDevice graphics)
+        public HotbarRenderer(InventoryManager inventory, GraphicsDevice graphics)
         {
             _inventory = inventory;
             _graphics = graphics;
@@ -26,7 +26,8 @@ namespace DeadOrbit.Systems
             int screenW = _graphics.Viewport.Width;
             int screenH = _graphics.Viewport.Height;
 
-            int totalW = Inventory.Size * SlotSize + (Inventory.Size - 1) * SlotPadding;
+            int totalW =
+                InventoryManager.Size * SlotSize + (InventoryManager.Size - 1) * SlotPadding;
             int startX = (screenW - totalW) / 2;
             int startY = screenH - SlotSize - BottomMargin;
 
@@ -41,7 +42,7 @@ namespace DeadOrbit.Systems
 
             DrawBorder(spriteBatch, hotbarBg, new Color(120, 120, 120, 220), 2);
 
-            for (int i = 0; i < Inventory.Size; i++)
+            for (int i = 0; i < InventoryManager.Size; i++)
             {
                 int x = startX + i * (SlotSize + SlotPadding);
                 bool isActive = i == _inventory.ActiveIndex;

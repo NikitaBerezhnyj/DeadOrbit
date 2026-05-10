@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Core
@@ -23,5 +24,14 @@ namespace DeadOrbit.Core
         public static bool operator !=(GridPosition a, GridPosition b) => !(a == b);
 
         public override string ToString() => $"({X}, {Y})";
+
+        public override bool Equals(object obj)
+        {
+            if (obj is GridPosition other)
+                return X == other.X && Y == other.Y;
+            return false;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(X, Y);
     }
 }
