@@ -16,6 +16,8 @@ namespace DeadOrbit
         public int HP { get; private set; } = 10;
         public int MaxHP { get; private set; } = 10;
         private float _stunTimer = 0f;
+        private float _iFrames = 0f;
+        public bool IsInvincible => _iFrames > 0;
         private Vector2 _knockbackVelocity = Vector2.Zero;
         private const float KnockbackDecay = 10f;
         public bool IsStunned => _stunTimer > 0;
@@ -40,6 +42,9 @@ namespace DeadOrbit
         public override void Update(GameTime gameTime)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_iFrames > 0)
+                _iFrames -= dt;
 
             if (_knockbackVelocity.LengthSquared() > 1f)
             {
@@ -78,8 +83,12 @@ namespace DeadOrbit
 
         public void TakeDamage(int amount, Vector2 knockbackDir)
         {
+            if (_iFrames > 0)
+                return;
+
             HP -= amount;
             _stunTimer = 0.5f;
+            _iFrames = 0.6f;
             _knockbackVelocity = knockbackDir * 150f;
 
             if (HP <= 0)

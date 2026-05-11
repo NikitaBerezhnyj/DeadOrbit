@@ -11,7 +11,7 @@ namespace DeadOrbit.Systems
 {
     public static class CombatSystem
     {
-        private const float AttackRangeMultiplier = 1.5f;
+        private const float AttackRangeMultiplier = 2.0f;
         private const int DefaultPlayerDamage = 2;
 
         public static DroppedItem TryPlayerAttack(Player player, List<Enemy> enemies)
@@ -78,15 +78,23 @@ namespace DeadOrbit.Systems
         {
             Vector2 playerCenter = GetCenter(player.Position);
             Vector2 enemyCenter = GetCenter(enemy.Position);
-
             Vector2 knockDir = Vector2.Normalize(enemyCenter - playerCenter);
 
-            enemy.TakeDamage(damage, knockDir);
+            float knockbackMultiplier = 1.0f;
+            if (player.FacingDirection != Vector2.Zero)
+            {
+                float dot = Vector2.Dot(player.FacingDirection, knockDir);
+
+                if (dot > 0.5f)
+                    knockbackMultiplier = 2.5f;
+                else if (dot > 0f)
+                    knockbackMultiplier = 1.5f;
+            }
+
+            enemy.TakeDamage(damage, knockDir, knockbackMultiplier);
 
             if (enemy.IsDefeated)
-            {
                 return new DroppedItem(enemy.Position, enemy.GetDrop());
-            }
 
             return null;
         }

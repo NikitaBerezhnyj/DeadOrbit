@@ -51,19 +51,21 @@ namespace DeadOrbit.Entities.Enemies
             Damage = damage;
             Speed = speed;
             AggroRange = aggroRange;
-            AttackRange = TileGrid.TileSize * 1.1f;
-            AttackCooldown = 1.2f;
+            AttackRange = TileGrid.TileSize * 0.9f;
+            AttackCooldown = 1.5f;
         }
 
         public abstract InventoryItem GetDrop();
 
-        public void TakeDamage(int amount, Vector2 knockbackDir)
+        public void TakeDamage(int amount, Vector2 knockbackDir, float knockbackMultiplier = 1.0f)
         {
             if (_stunTimer > 0)
                 return;
+
             HP -= amount;
             _stunTimer = 0.4f;
-            _knockbackVelocity = knockbackDir * 120f;
+            _knockbackVelocity = knockbackDir * 120f * knockbackMultiplier;
+
             Console.WriteLine($"[ENEMY] {GetType().Name} HP: {HP}/{MaxHP}");
         }
 
@@ -120,14 +122,14 @@ namespace DeadOrbit.Entities.Enemies
                     {
                         State = EnemyState.Attack;
                         _path = null;
+                        Position = Position;
                         break;
                     }
-
                     MoveAlongPath(gameTime, player, blocked);
                     break;
 
                 case EnemyState.Attack:
-                    if (dist > AttackRange)
+                    if (dist > AttackRange * 1.5f)
                     {
                         State = EnemyState.Chase;
                         break;
@@ -135,13 +137,10 @@ namespace DeadOrbit.Entities.Enemies
                     if (_attackTimer <= 0 && _stunTimer <= 0)
                     {
                         _attackTimer = AttackCooldown;
-
                         var knockDir = Vector2.Normalize(playerCenter - center);
-
                         CombatSystem.HitPlayer(player, Damage, knockDir);
-
-                        return null;
                     }
+
                     break;
             }
 
@@ -151,7 +150,6 @@ namespace DeadOrbit.Entities.Enemies
         private void MoveAlongPath(GameTime gameTime, Player player, HashSet<GridPosition> blocked)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             _pathUpdateTimer -= dt;
 
             if (_pathUpdateTimer <= 0f || _path == null)
@@ -164,15 +162,16 @@ namespace DeadOrbit.Entities.Enemies
             if (_path == null || _pathIndex >= _path.Count)
                 return;
 
+            if (_pathIndex >= _path.Count - 1)
+                return;
+
             Vector2 target = TileGrid.ToWorld(_path[_pathIndex]);
             Vector2 center = Position + new Vector2(TileGrid.TileSize / 2f);
             Vector2 targetCenter = target + new Vector2(TileGrid.TileSize / 2f);
             Vector2 dir = targetCenter - center;
 
             if (dir.Length() < 2f)
-            {
                 _pathIndex++;
-            }
             else
             {
                 dir.Normalize();
