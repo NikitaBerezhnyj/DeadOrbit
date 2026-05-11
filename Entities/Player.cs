@@ -21,8 +21,9 @@ namespace DeadOrbit
         private Vector2 _knockbackVelocity = Vector2.Zero;
         private const float KnockbackDecay = 10f;
         public bool IsStunned => _stunTimer > 0;
+        private readonly SwingAnimation _swing = new();
 
-        public Vector2 FacingDirection { get; private set; } = Vector2.Zero;
+        public Vector2 FacingDirection { get; private set; } = new Vector2(0, 1);
         public InventoryManager InventoryManager { get; private set; }
 
         public Rectangle Bounds =>
@@ -42,6 +43,8 @@ namespace DeadOrbit
         public override void Update(GameTime gameTime)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _swing.Update(dt);
 
             if (_iFrames > 0)
                 _iFrames -= dt;
@@ -81,6 +84,11 @@ namespace DeadOrbit
             CollisionSystem.Resolve(ref Position, Bounds, collidables);
         }
 
+        public void PlaySwingAnimation()
+        {
+            _swing.Trigger(FacingDirection);
+        }
+
         public void TakeDamage(int amount, Vector2 knockbackDir)
         {
             if (_iFrames > 0)
@@ -105,6 +113,7 @@ namespace DeadOrbit
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(GameResources.Pixel, Bounds, Color.White);
+            _swing.Draw(spriteBatch, Position);
         }
     }
 }

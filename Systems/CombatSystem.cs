@@ -22,6 +22,8 @@ namespace DeadOrbit.Systems
                 return null;
             }
 
+            player.PlaySwingAnimation();
+
             Enemy target = FindTarget(player, enemies);
 
             if (target == null)

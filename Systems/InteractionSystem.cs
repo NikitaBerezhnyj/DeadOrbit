@@ -17,12 +17,15 @@ namespace DeadOrbit.Systems
             ParticleSystem particles = null
         )
         {
+            string held = player.InventoryManager.ActiveItem?.Name ?? "";
+
+            player.PlaySwingAnimation();
+
             var target = FindTarget(player, nodes);
             if (target == null)
                 return null;
 
             string required = GetRequiredTool(target);
-            string held = player.InventoryManager.ActiveItem?.Name ?? "";
 
             if (held != required)
             {
