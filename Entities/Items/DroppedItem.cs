@@ -78,17 +78,18 @@ namespace DeadOrbit.Entities.Items
             if (IsPickedUp)
                 return;
 
-            spriteBatch.Draw(GameResources.Pixel, Bounds, Item.Color);
-
-            if (_isAttracting)
+            if (Item.SpriteSource.HasValue)
             {
-                var glowBounds = new Rectangle(
-                    Bounds.X - 2,
-                    Bounds.Y - 2,
-                    Bounds.Width + 4,
-                    Bounds.Height + 4
+                spriteBatch.Draw(
+                    GameResources.Tileset,
+                    Bounds,
+                    Item.SpriteSource.Value,
+                    Color.White
                 );
-                spriteBatch.Draw(GameResources.Pixel, glowBounds, Item.Color * 0.3f);
+            }
+            else
+            {
+                spriteBatch.Draw(GameResources.Pixel, Bounds, Item.Color);
             }
         }
     }
