@@ -122,7 +122,6 @@ namespace DeadOrbit.Entities.Enemies
                     {
                         State = EnemyState.Attack;
                         _path = null;
-                        Position = Position;
                         break;
                     }
                     MoveAlongPath(gameTime, player, blocked);

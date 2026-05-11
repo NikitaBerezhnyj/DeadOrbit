@@ -17,8 +17,6 @@ namespace DeadOrbit.Entities.Items
         private const float PickupRange = TileGrid.TileSize * 0.6f;
         private const float MagnetSpeed = 180f;
 
-        private bool _isAttracting = false;
-
         public Rectangle Bounds =>
             new Rectangle(
                 (int)Position.X + (TileGrid.TileSize - Size) / 2,
@@ -54,15 +52,10 @@ namespace DeadOrbit.Entities.Items
 
             if (dist < MagnetRange)
             {
-                _isAttracting = true;
                 var dir = Vector2.Normalize(playerCenter - myCenter);
 
                 float speedMultiplier = 1f + (1f - dist / MagnetRange) * 2f;
                 Position += dir * MagnetSpeed * speedMultiplier * dt;
-            }
-            else
-            {
-                _isAttracting = false;
             }
         }
 
