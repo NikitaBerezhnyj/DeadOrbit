@@ -30,14 +30,7 @@ namespace DeadOrbit.Systems
                 return null;
             }
 
-            target.Mine(1);
-
-            if (particles != null && held == "Pickaxe")
-            {
-                var center = target.Position + new Vector2(TileGrid.TileSize / 2f);
-                var color = target is CoalNode ? Color.DarkGray : Color.SlateGray;
-                particles.Emit(center, color, count: 8);
-            }
+            target.Mine(1, particles);
 
             if (target.IsDestroyed)
                 return new DroppedItem(target.Position, target.GetDrop());

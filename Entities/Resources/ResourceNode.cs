@@ -13,6 +13,7 @@ namespace DeadOrbit.Entities
         public bool IsDestroyed => HP <= 0;
         public bool BlocksMovement => !IsDestroyed;
         private readonly ShakeEffect _shake = new();
+        protected abstract Rectangle? GetSpriteSource();
         public abstract InventoryItem GetDrop();
 
         public Rectangle Bounds =>
@@ -27,12 +28,14 @@ namespace DeadOrbit.Entities
             NodeColor = color;
         }
 
-        public void Mine(int damage)
+        public void Mine(int damage, ParticleSystem particles = null)
         {
             if (IsDestroyed)
                 return;
             HP -= damage;
             _shake.Trigger(intensity: 3f);
+
+            particles?.Emit(Position + new Vector2(TileGrid.TileSize / 2f), NodeColor, count: 8);
         }
 
         public override void Update(GameTime gameTime)
@@ -46,7 +49,19 @@ namespace DeadOrbit.Entities
             if (IsDestroyed)
                 return;
 
-            spriteBatch.Draw(GameResources.Pixel, Bounds, NodeColor);
+            Vector2 offset = GetShakeOffset();
+            var dest = new Rectangle(
+                (int)(Position.X + offset.X),
+                (int)(Position.Y + offset.Y),
+                TileGrid.TileSize,
+                TileGrid.TileSize
+            );
+
+            var source = GetSpriteSource();
+            if (source.HasValue)
+                spriteBatch.Draw(GameResources.Tileset, dest, source.Value, Color.White);
+            else
+                spriteBatch.Draw(GameResources.Pixel, dest, NodeColor);
         }
 
         protected Vector2 GetShakeOffset() =>
