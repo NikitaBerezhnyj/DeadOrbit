@@ -1,0 +1,12 @@
+{
+  "pause_menu": "ПАУЗА",
+  "menu_start": "ПОЧАТИ ГРУ",
+  "menu_continue": "ПРОДОВЖИТИ",
+  "menu_save": "ЗБЕРЕГТИ",
+  "menu_options": "НАЛАШТУВАННЯ",
+  "menu_quit": "ВИЙТИ",
+
+  "oxygen_label": "КИСЕНЬ: {0}%",
+
+  "signal_beacon": "СИГНАЛЬНИЙ МАЯК"
+}

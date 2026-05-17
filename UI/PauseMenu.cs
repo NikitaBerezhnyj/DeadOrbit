@@ -1,5 +1,6 @@
 using System;
 using DeadOrbit.Core;
+using DeadOrbit.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -10,12 +11,24 @@ namespace DeadOrbit.UI
         private readonly GraphicsDevice _graphics;
         private int _selectedIndex = 0;
 
-        private readonly string[] _labels = { "Продовжити", "Налаштування", "Зберегти", "Вийти" };
+        private readonly string[] _menuKeys =
+        {
+            "menu_continue",
+            "menu_options",
+            "menu_save",
+            "menu_quit",
+        };
+
         private const int ButtonWidth = 240;
         private const int ButtonHeight = 44;
         private const int ButtonSpacing = 12;
 
         public bool IsVisible { get; private set; } = false;
+
+        public PauseMenu(GraphicsDevice graphics)
+        {
+            _graphics = graphics;
+        }
 
         public bool Update()
         {
@@ -23,10 +36,10 @@ namespace DeadOrbit.UI
                 return false;
 
             if (Systems.InputSystem.UiUp)
-                _selectedIndex = (_selectedIndex - 1 + _labels.Length) % _labels.Length;
+                _selectedIndex = (_selectedIndex - 1 + _menuKeys.Length) % _menuKeys.Length;
 
             if (Systems.InputSystem.UiDown)
-                _selectedIndex = (_selectedIndex + 1) % _labels.Length;
+                _selectedIndex = (_selectedIndex + 1) % _menuKeys.Length;
 
             if (Systems.InputSystem.UsePressed)
             {
@@ -83,7 +96,7 @@ namespace DeadOrbit.UI
 
             if (GameResources.DefaultFont != null)
             {
-                string title = "ПАУЗА";
+                string title = LocalizationManager.Get("pause_menu");
                 Vector2 titleSize = GameResources.DefaultFont.MeasureString(title);
                 spriteBatch.DrawString(
                     GameResources.DefaultFont,
@@ -93,15 +106,17 @@ namespace DeadOrbit.UI
                 );
             }
 
-            int totalH = _labels.Length * ButtonHeight + (_labels.Length - 1) * ButtonSpacing;
+            int totalH = _menuKeys.Length * ButtonHeight + (_menuKeys.Length - 1) * ButtonSpacing;
             int startY = screenH / 2 - totalH / 2;
 
-            for (int i = 0; i < _labels.Length; i++)
+            for (int i = 0; i < _menuKeys.Length; i++)
             {
                 int x = screenW / 2 - ButtonWidth / 2;
                 int y = startY + i * (ButtonHeight + ButtonSpacing);
 
                 bool isSelected = i == _selectedIndex;
+
+                string currentLabel = LocalizationManager.Get(_menuKeys[i]);
 
                 spriteBatch.Draw(
                     GameResources.Pixel,
@@ -118,7 +133,7 @@ namespace DeadOrbit.UI
 
                 if (GameResources.DefaultFont != null)
                 {
-                    Vector2 textSize = GameResources.DefaultFont.MeasureString(_labels[i]);
+                    Vector2 textSize = GameResources.DefaultFont.MeasureString(currentLabel);
                     Vector2 textPos = new Vector2(
                         x + ButtonWidth / 2f - textSize.X / 2f,
                         y + ButtonHeight / 2f - textSize.Y / 2f
@@ -126,13 +141,14 @@ namespace DeadOrbit.UI
 
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        _labels[i],
+                        currentLabel,
                         textPos + new Vector2(1, 1),
                         Color.Black * 0.8f
                     );
+
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        _labels[i],
+                        currentLabel,
                         textPos,
                         isSelected ? Color.White : Color.Gray
                     );
@@ -162,11 +178,6 @@ namespace DeadOrbit.UI
                 new Rectangle(rect.Right - thickness, rect.Y, thickness, rect.Height),
                 color
             );
-        }
-
-        public PauseMenu(GraphicsDevice graphics)
-        {
-            _graphics = graphics;
         }
     }
 }

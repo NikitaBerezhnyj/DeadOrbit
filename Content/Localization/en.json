@@ -1,0 +1,12 @@
+{
+  "pause_menu": "PAUSE",
+  "menu_start": "START GAME",
+  "menu_continue": "CONTINUE",
+  "menu_save": "SAVE",
+  "menu_options": "OPTIONS",
+  "menu_quit": "QUIT",
+
+  "oxygen_label": "OXYGEN: {0}%",
+
+  "signal_beacon": "SIGNAL BEACON"
+}

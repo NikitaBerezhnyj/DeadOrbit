@@ -21,6 +21,7 @@ namespace DeadOrbit
 
         protected override void Initialize()
         {
+            LocalizationManager.Initialize();
             _world = new WorldManager();
 
             base.Initialize();
