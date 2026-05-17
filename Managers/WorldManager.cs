@@ -9,6 +9,7 @@ using DeadOrbit.Entities.Structures;
 using DeadOrbit.Interfaces;
 using DeadOrbit.Rendering;
 using DeadOrbit.Systems;
+using DeadOrbit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,6 +21,9 @@ namespace DeadOrbit.Managers
         private TileMap _tileMap;
         private Player _player;
         private Camera _camera;
+        private PauseMenu _pauseMenu;
+        private bool _isPaused = false;
+
         private List<BaseStation> _baseStations;
         private List<ResourceNode> _resources;
         private List<DroppedItem> _droppedItems = new();
@@ -64,11 +68,30 @@ namespace DeadOrbit.Managers
             _hotbar = new HotbarRenderer(_player.InventoryManager, graphicsDevice);
             _healthRenderer = new PlayerHealthRenderer(_player);
 
+            _pauseMenu = new PauseMenu(graphicsDevice);
+
             RebuildBlockedTiles();
         }
 
         public void Update(GameTime gameTime)
         {
+            if (InputSystem.PausePressed)
+            {
+                _isPaused = !_isPaused;
+                if (_isPaused)
+                    _pauseMenu.Show();
+                else
+                    _pauseMenu.Hide();
+            }
+
+            if (_isPaused)
+            {
+                bool resumed = _pauseMenu.Update();
+                if (resumed)
+                    _isPaused = false;
+                return;
+            }
+
             _player.Update(gameTime);
 
             var wallsNearPlayer = _tileMap.GetNearbyWalls(_player.Position);
@@ -184,6 +207,7 @@ namespace DeadOrbit.Managers
             spriteBatch.Begin();
             _hotbar.Draw(spriteBatch);
             _healthRenderer.Draw(spriteBatch);
+            _pauseMenu.Draw(spriteBatch);
             spriteBatch.End();
         }
 

@@ -11,6 +11,28 @@
         <Start>&#32;</Start>
         <End>&#126;</End>
       </CharacterRegion>
+      <!-- українська кирилиця -->
+      <CharacterRegion>
+        <Start>&#1040;</Start>
+        <End>&#1103;</End>
+      </CharacterRegion>
+      <!-- і, ї, є, ґ -->
+      <CharacterRegion>
+        <Start>&#1168;</Start>
+        <End>&#1169;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#1028;</Start>
+        <End>&#1028;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#1030;</Start>
+        <End>&#1031;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#1110;</Start>
+        <End>&#1111;</End>
+      </CharacterRegion>
     </CharacterRegions>
   </Asset>
 </XnaContent>
