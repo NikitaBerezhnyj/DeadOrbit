@@ -13,6 +13,7 @@ namespace DeadOrbit.Entities.Enemies
     public enum EnemyState
     {
         Idle,
+        Wander,
         Chase,
         Attack,
     }
@@ -39,6 +40,12 @@ namespace DeadOrbit.Entities.Enemies
         protected float AttackRange;
         protected float AttackCooldown;
 
+        private float _idleTimer = 0f;
+        private float _wanderTimer = 0f;
+        private Vector2 _wanderTarget;
+        private bool _hasWanderTarget = false;
+        private readonly Random _rnd = new();
+        private const float WanderSpeed = 0.4f;
         private float _attackTimer = 0f;
         private float _stunTimer = 0f;
         private Vector2 _knockbackVelocity = Vector2.Zero;
@@ -107,7 +114,72 @@ namespace DeadOrbit.Entities.Enemies
                     if (dist <= AggroRange)
                     {
                         State = EnemyState.Chase;
-                        Console.WriteLine($"[AI] {GetType().Name} → Chase");
+                        break;
+                    }
+
+                    _idleTimer -= dt;
+                    if (_idleTimer <= 0f)
+                    {
+                        _idleTimer = 2f + (float)_rnd.NextDouble() * 3f;
+                        if (_rnd.NextDouble() < 0.6f)
+                        {
+                            State = EnemyState.Wander;
+                            _wanderTimer = 1.5f + (float)_rnd.NextDouble() * 2f;
+                            _hasWanderTarget = false;
+                        }
+                    }
+                    break;
+
+                case EnemyState.Wander:
+                    if (dist <= AggroRange)
+                    {
+                        State = EnemyState.Chase;
+                        _hasWanderTarget = false;
+                        break;
+                    }
+
+                    _wanderTimer -= dt;
+                    if (_wanderTimer <= 0f)
+                    {
+                        State = EnemyState.Idle;
+                        _idleTimer = 1f + (float)_rnd.NextDouble() * 2f;
+                        _hasWanderTarget = false;
+                        break;
+                    }
+
+                    if (
+                        !_hasWanderTarget
+                        || Vector2.Distance(
+                            Position + new Vector2(TileGrid.TileSize / 2f),
+                            _wanderTarget
+                        ) < 4f
+                    )
+                    {
+                        float angle = (float)(_rnd.NextDouble() * MathF.PI * 2);
+                        float radius = TileGrid.TileSize * (1f + (float)_rnd.NextDouble() * 2f);
+                        _wanderTarget =
+                            Position
+                            + new Vector2(MathF.Cos(angle) * radius, MathF.Sin(angle) * radius);
+
+                        _wanderTarget.X = MathHelper.Clamp(
+                            _wanderTarget.X,
+                            0,
+                            TileGrid.WorldPixelW - TileGrid.TileSize
+                        );
+                        _wanderTarget.Y = MathHelper.Clamp(
+                            _wanderTarget.Y,
+                            0,
+                            TileGrid.WorldPixelH - TileGrid.TileSize
+                        );
+                        _hasWanderTarget = true;
+                    }
+
+                    var wanderDir =
+                        _wanderTarget - (Position + new Vector2(TileGrid.TileSize / 2f));
+                    if (wanderDir.LengthSquared() > 1f)
+                    {
+                        wanderDir.Normalize();
+                        Position += wanderDir * Speed * WanderSpeed * dt;
                     }
                     break;
 
@@ -159,9 +231,6 @@ namespace DeadOrbit.Entities.Enemies
             }
 
             if (_path == null || _pathIndex >= _path.Count)
-                return;
-
-            if (_pathIndex >= _path.Count - 1)
                 return;
 
             Vector2 target = TileGrid.ToWorld(_path[_pathIndex]);
