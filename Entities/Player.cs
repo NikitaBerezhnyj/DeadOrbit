@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
+using DeadOrbit.Entities.Items;
 using DeadOrbit.Interfaces;
 using DeadOrbit.Managers;
+using DeadOrbit.Models;
 using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -108,6 +110,36 @@ namespace DeadOrbit
             {
                 Console.WriteLine($"[PLAYER] HP: {HP}/{MaxHP}");
             }
+        }
+
+        public DroppedItem TryDrop()
+        {
+            var active = InventoryManager.ActiveItem;
+
+            if (active == null || active.IsEmpty)
+                return null;
+
+            if (active.Type == ItemType.Tool || active.Type == ItemType.Weapon)
+                return null;
+
+            Vector2 dir = FacingDirection == Vector2.Zero ? Vector2.UnitY : FacingDirection;
+
+            Vector2 dropPos = Position + dir * TileGrid.TileSize;
+
+            var droppedItem = new InventoryItem(
+                active.Name,
+                active.Type,
+                1,
+                active.Color,
+                active.SpriteSource
+            );
+
+            var dropped = new DroppedItem(dropPos, droppedItem, applyImpulse: true);
+            dropped.PickupDelay = 0.8f;
+
+            InventoryManager.DropActive();
+
+            return dropped;
         }
 
         public override void Draw(SpriteBatch spriteBatch)

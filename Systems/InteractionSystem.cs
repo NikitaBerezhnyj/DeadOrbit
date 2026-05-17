@@ -36,7 +36,7 @@ namespace DeadOrbit.Systems
             target.Mine(1, particles);
 
             if (target.IsDestroyed)
-                return new DroppedItem(target.Position, target.GetDrop());
+                return new DroppedItem(target.Position, target.GetDrop(), applyImpulse: true);
 
             return null;
         }

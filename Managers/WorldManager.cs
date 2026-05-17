@@ -126,6 +126,13 @@ namespace DeadOrbit.Managers
                     _droppedItems.Add(drop);
             }
 
+            if (InputSystem.DropPressed)
+            {
+                var dropped = _player.TryDrop();
+                if (dropped != null)
+                    _droppedItems.Add(dropped);
+            }
+
             _droppedItems.RemoveAll(d => d.IsPickedUp);
 
             foreach (var d in _droppedItems)

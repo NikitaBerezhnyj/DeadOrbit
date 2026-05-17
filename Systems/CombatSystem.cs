@@ -96,7 +96,7 @@ namespace DeadOrbit.Systems
             enemy.TakeDamage(damage, knockDir, knockbackMultiplier);
 
             if (enemy.IsDefeated)
-                return new DroppedItem(enemy.Position, enemy.GetDrop());
+                return new DroppedItem(enemy.Position, enemy.GetDrop(), applyImpulse: true);
 
             return null;
         }
