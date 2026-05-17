@@ -113,14 +113,12 @@ namespace DeadOrbit.Managers
         private static List<Enemy> GenerateEnemies(Random rnd, HashSet<(int x, int y)> usedTiles)
         {
             var enemies = new List<Enemy>();
-
             for (int i = 0; i < EnemyCount; i++)
             {
                 var (x, y) = GetFreeTile(rnd, usedTiles);
-
-                enemies.Add(new Beetle(x, y));
+                Enemy enemy = rnd.Next(100) < 60 ? new Beetle(x, y) : new Crawler(x, y);
+                enemies.Add(enemy);
             }
-
             return enemies;
         }
 

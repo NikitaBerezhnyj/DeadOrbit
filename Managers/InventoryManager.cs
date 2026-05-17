@@ -1,6 +1,7 @@
 using System;
 using DeadOrbit.Core;
 using DeadOrbit.Models;
+using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Managers
 {
@@ -104,6 +105,26 @@ namespace DeadOrbit.Managers
         {
             ActiveIndex = (ActiveIndex - 1 + Size) % Size;
             Console.WriteLine($"[INVENTORY] Active: {ActiveItem}");
+        }
+
+        public void DropActive()
+        {
+            var active = Slots[ActiveIndex];
+
+            if (active == null || active.IsEmpty)
+                return;
+
+            active.Count--;
+
+            if (active.Count <= 0)
+            {
+                ClearActive();
+            }
+        }
+
+        public void ClearActive()
+        {
+            Slots[ActiveIndex] = new InventoryItem("", ItemType.None, 0, Color.Transparent);
         }
     }
 }

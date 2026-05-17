@@ -1,3 +1,4 @@
+using System;
 using DeadOrbit;
 using DeadOrbit.Core;
 using DeadOrbit.Models;
@@ -13,11 +14,13 @@ namespace DeadOrbit.Entities.Items
         public float PickupDelay = 0.5f;
 
         private const int Size = 12;
+
+        private Vector2 _velocity = Vector2.Zero;
+        private const float VelocityDecay = 8f;
+        private static readonly Random _rnd = new();
         private const float MagnetRange = TileGrid.TileSize * 1f;
         private const float PickupRange = TileGrid.TileSize * 0.6f;
         private const float MagnetSpeed = 180f;
-
-        private bool _isAttracting = false;
 
         public Rectangle Bounds =>
             new Rectangle(
@@ -27,17 +30,32 @@ namespace DeadOrbit.Entities.Items
                 Size
             );
 
-        public DroppedItem(Vector2 worldPosition, InventoryItem item)
+        public DroppedItem(Vector2 worldPosition, InventoryItem item, bool applyImpulse = false)
         {
             Position = worldPosition;
             Item = item;
+
+            if (applyImpulse)
+            {
+                float angle = (float)(_rnd.NextDouble() * MathF.PI * 2);
+                float speed = 40f + (float)_rnd.NextDouble() * 60f;
+                _velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * speed;
+            }
         }
 
         public override void Update(GameTime gameTime)
         {
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_velocity.LengthSquared() > 0.5f)
+            {
+                Position += _velocity * dt;
+                _velocity -= _velocity * VelocityDecay * dt;
+            }
+
             if (PickupDelay > 0)
             {
-                PickupDelay -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                PickupDelay -= dt;
                 return;
             }
         }
@@ -54,15 +72,10 @@ namespace DeadOrbit.Entities.Items
 
             if (dist < MagnetRange)
             {
-                _isAttracting = true;
                 var dir = Vector2.Normalize(playerCenter - myCenter);
 
                 float speedMultiplier = 1f + (1f - dist / MagnetRange) * 2f;
                 Position += dir * MagnetSpeed * speedMultiplier * dt;
-            }
-            else
-            {
-                _isAttracting = false;
             }
         }
 
@@ -78,17 +91,18 @@ namespace DeadOrbit.Entities.Items
             if (IsPickedUp)
                 return;
 
-            spriteBatch.Draw(GameResources.Pixel, Bounds, Item.Color);
-
-            if (_isAttracting)
+            if (Item.SpriteSource.HasValue)
             {
-                var glowBounds = new Rectangle(
-                    Bounds.X - 2,
-                    Bounds.Y - 2,
-                    Bounds.Width + 4,
-                    Bounds.Height + 4
+                spriteBatch.Draw(
+                    GameResources.Tileset,
+                    Bounds,
+                    Item.SpriteSource.Value,
+                    Color.White
                 );
-                spriteBatch.Draw(GameResources.Pixel, glowBounds, Item.Color * 0.3f);
+            }
+            else
+            {
+                spriteBatch.Draw(GameResources.Pixel, Bounds, Item.Color);
             }
         }
     }

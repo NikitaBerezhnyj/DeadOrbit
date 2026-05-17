@@ -13,21 +13,6 @@ namespace DeadOrbit.Entities
         public override InventoryItem GetDrop() =>
             new InventoryItem("Coal", ItemType.Resource, 1, Color.DarkGray, SpriteSourceMap.Coal);
 
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (IsDestroyed)
-                return;
-
-            Vector2 offset = GetShakeOffset();
-
-            var dest = new Rectangle(
-                (int)(Position.X + offset.X),
-                (int)(Position.Y + offset.Y),
-                TileGrid.TileSize,
-                TileGrid.TileSize
-            );
-
-            spriteBatch.Draw(GameResources.Tileset, dest, SpriteSourceMap.CoalNode, Color.White);
-        }
+        protected override Rectangle? GetSpriteSource() => SpriteSourceMap.CoalNode;
     }
 }

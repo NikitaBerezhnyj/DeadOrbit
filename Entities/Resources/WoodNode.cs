@@ -11,5 +11,7 @@ namespace DeadOrbit.Entities
 
         public override InventoryItem GetDrop() =>
             new InventoryItem("Wood", ItemType.Resource, 1, Color.SandyBrown, SpriteSourceMap.Wood);
+
+        protected override Rectangle? GetSpriteSource() => null;
     }
 }

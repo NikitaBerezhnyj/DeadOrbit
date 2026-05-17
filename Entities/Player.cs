@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
+using DeadOrbit.Entities.Items;
 using DeadOrbit.Interfaces;
 using DeadOrbit.Managers;
+using DeadOrbit.Models;
 using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,11 +18,14 @@ namespace DeadOrbit
         public int HP { get; private set; } = 10;
         public int MaxHP { get; private set; } = 10;
         private float _stunTimer = 0f;
+        private float _iFrames = 0f;
+        public bool IsInvincible => _iFrames > 0;
         private Vector2 _knockbackVelocity = Vector2.Zero;
         private const float KnockbackDecay = 10f;
         public bool IsStunned => _stunTimer > 0;
+        private readonly SwingAnimation _swing = new();
 
-        public Vector2 FacingDirection { get; private set; } = Vector2.Zero;
+        public Vector2 FacingDirection { get; private set; } = new Vector2(0, 1);
         public InventoryManager InventoryManager { get; private set; }
 
         public Rectangle Bounds =>
@@ -40,6 +45,11 @@ namespace DeadOrbit
         public override void Update(GameTime gameTime)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _swing.Update(dt);
+
+            if (_iFrames > 0)
+                _iFrames -= dt;
 
             if (_knockbackVelocity.LengthSquared() > 1f)
             {
@@ -76,10 +86,19 @@ namespace DeadOrbit
             CollisionSystem.Resolve(ref Position, Bounds, collidables);
         }
 
+        public void PlaySwingAnimation()
+        {
+            _swing.Trigger(FacingDirection);
+        }
+
         public void TakeDamage(int amount, Vector2 knockbackDir)
         {
+            if (_iFrames > 0)
+                return;
+
             HP -= amount;
             _stunTimer = 0.5f;
+            _iFrames = 0.6f;
             _knockbackVelocity = knockbackDir * 150f;
 
             if (HP <= 0)
@@ -93,9 +112,40 @@ namespace DeadOrbit
             }
         }
 
+        public DroppedItem TryDrop()
+        {
+            var active = InventoryManager.ActiveItem;
+
+            if (active == null || active.IsEmpty)
+                return null;
+
+            if (active.Type == ItemType.Tool || active.Type == ItemType.Weapon)
+                return null;
+
+            Vector2 dir = FacingDirection == Vector2.Zero ? Vector2.UnitY : FacingDirection;
+
+            Vector2 dropPos = Position + dir * TileGrid.TileSize;
+
+            var droppedItem = new InventoryItem(
+                active.Name,
+                active.Type,
+                1,
+                active.Color,
+                active.SpriteSource
+            );
+
+            var dropped = new DroppedItem(dropPos, droppedItem, applyImpulse: true);
+            dropped.PickupDelay = 0.8f;
+
+            InventoryManager.DropActive();
+
+            return dropped;
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(GameResources.Pixel, Bounds, Color.White);
+            _swing.Draw(spriteBatch, Position);
         }
     }
 }

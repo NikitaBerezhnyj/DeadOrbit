@@ -13,6 +13,7 @@ namespace DeadOrbit.Entities.Enemies
     public enum EnemyState
     {
         Idle,
+        Wander,
         Chase,
         Attack,
     }
@@ -39,6 +40,12 @@ namespace DeadOrbit.Entities.Enemies
         protected float AttackRange;
         protected float AttackCooldown;
 
+        private float _idleTimer = 0f;
+        private float _wanderTimer = 0f;
+        private Vector2 _wanderTarget;
+        private bool _hasWanderTarget = false;
+        private readonly Random _rnd = new();
+        private const float WanderSpeed = 0.4f;
         private float _attackTimer = 0f;
         private float _stunTimer = 0f;
         private Vector2 _knockbackVelocity = Vector2.Zero;
@@ -51,19 +58,21 @@ namespace DeadOrbit.Entities.Enemies
             Damage = damage;
             Speed = speed;
             AggroRange = aggroRange;
-            AttackRange = TileGrid.TileSize * 1.1f;
-            AttackCooldown = 1.2f;
+            AttackRange = TileGrid.TileSize * 0.9f;
+            AttackCooldown = 1.5f;
         }
 
         public abstract InventoryItem GetDrop();
 
-        public void TakeDamage(int amount, Vector2 knockbackDir)
+        public void TakeDamage(int amount, Vector2 knockbackDir, float knockbackMultiplier = 1.0f)
         {
             if (_stunTimer > 0)
                 return;
+
             HP -= amount;
             _stunTimer = 0.4f;
-            _knockbackVelocity = knockbackDir * 120f;
+            _knockbackVelocity = knockbackDir * 120f * knockbackMultiplier;
+
             Console.WriteLine($"[ENEMY] {GetType().Name} HP: {HP}/{MaxHP}");
         }
 
@@ -105,7 +114,72 @@ namespace DeadOrbit.Entities.Enemies
                     if (dist <= AggroRange)
                     {
                         State = EnemyState.Chase;
-                        Console.WriteLine($"[AI] {GetType().Name} → Chase");
+                        break;
+                    }
+
+                    _idleTimer -= dt;
+                    if (_idleTimer <= 0f)
+                    {
+                        _idleTimer = 2f + (float)_rnd.NextDouble() * 3f;
+                        if (_rnd.NextDouble() < 0.6f)
+                        {
+                            State = EnemyState.Wander;
+                            _wanderTimer = 1.5f + (float)_rnd.NextDouble() * 2f;
+                            _hasWanderTarget = false;
+                        }
+                    }
+                    break;
+
+                case EnemyState.Wander:
+                    if (dist <= AggroRange)
+                    {
+                        State = EnemyState.Chase;
+                        _hasWanderTarget = false;
+                        break;
+                    }
+
+                    _wanderTimer -= dt;
+                    if (_wanderTimer <= 0f)
+                    {
+                        State = EnemyState.Idle;
+                        _idleTimer = 1f + (float)_rnd.NextDouble() * 2f;
+                        _hasWanderTarget = false;
+                        break;
+                    }
+
+                    if (
+                        !_hasWanderTarget
+                        || Vector2.Distance(
+                            Position + new Vector2(TileGrid.TileSize / 2f),
+                            _wanderTarget
+                        ) < 4f
+                    )
+                    {
+                        float angle = (float)(_rnd.NextDouble() * MathF.PI * 2);
+                        float radius = TileGrid.TileSize * (1f + (float)_rnd.NextDouble() * 2f);
+                        _wanderTarget =
+                            Position
+                            + new Vector2(MathF.Cos(angle) * radius, MathF.Sin(angle) * radius);
+
+                        _wanderTarget.X = MathHelper.Clamp(
+                            _wanderTarget.X,
+                            0,
+                            TileGrid.WorldPixelW - TileGrid.TileSize
+                        );
+                        _wanderTarget.Y = MathHelper.Clamp(
+                            _wanderTarget.Y,
+                            0,
+                            TileGrid.WorldPixelH - TileGrid.TileSize
+                        );
+                        _hasWanderTarget = true;
+                    }
+
+                    var wanderDir =
+                        _wanderTarget - (Position + new Vector2(TileGrid.TileSize / 2f));
+                    if (wanderDir.LengthSquared() > 1f)
+                    {
+                        wanderDir.Normalize();
+                        Position += wanderDir * Speed * WanderSpeed * dt;
                     }
                     break;
 
@@ -122,12 +196,11 @@ namespace DeadOrbit.Entities.Enemies
                         _path = null;
                         break;
                     }
-
                     MoveAlongPath(gameTime, player, blocked);
                     break;
 
                 case EnemyState.Attack:
-                    if (dist > AttackRange)
+                    if (dist > AttackRange * 1.5f)
                     {
                         State = EnemyState.Chase;
                         break;
@@ -135,13 +208,10 @@ namespace DeadOrbit.Entities.Enemies
                     if (_attackTimer <= 0 && _stunTimer <= 0)
                     {
                         _attackTimer = AttackCooldown;
-
                         var knockDir = Vector2.Normalize(playerCenter - center);
-
                         CombatSystem.HitPlayer(player, Damage, knockDir);
-
-                        return null;
                     }
+
                     break;
             }
 
@@ -151,7 +221,6 @@ namespace DeadOrbit.Entities.Enemies
         private void MoveAlongPath(GameTime gameTime, Player player, HashSet<GridPosition> blocked)
         {
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             _pathUpdateTimer -= dt;
 
             if (_pathUpdateTimer <= 0f || _path == null)
@@ -170,9 +239,7 @@ namespace DeadOrbit.Entities.Enemies
             Vector2 dir = targetCenter - center;
 
             if (dir.Length() < 2f)
-            {
                 _pathIndex++;
-            }
             else
             {
                 dir.Normalize();

@@ -17,12 +17,15 @@ namespace DeadOrbit.Systems
             ParticleSystem particles = null
         )
         {
+            string held = player.InventoryManager.ActiveItem?.Name ?? "";
+
+            player.PlaySwingAnimation();
+
             var target = FindTarget(player, nodes);
             if (target == null)
                 return null;
 
             string required = GetRequiredTool(target);
-            string held = player.InventoryManager.ActiveItem?.Name ?? "";
 
             if (held != required)
             {
@@ -30,17 +33,10 @@ namespace DeadOrbit.Systems
                 return null;
             }
 
-            target.Mine(1);
-
-            if (particles != null && held == "Pickaxe")
-            {
-                var center = target.Position + new Vector2(TileGrid.TileSize / 2f);
-                var color = target is CoalNode ? Color.DarkGray : Color.SlateGray;
-                particles.Emit(center, color, count: 8);
-            }
+            target.Mine(1, particles);
 
             if (target.IsDestroyed)
-                return new DroppedItem(target.Position, target.GetDrop());
+                return new DroppedItem(target.Position, target.GetDrop(), applyImpulse: true);
 
             return null;
         }
