@@ -7,12 +7,13 @@
 /config:
 /profile:Reach
 /compress:False
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/build:Fonts/DefaultFont.spritefont
 
 #-------------------------------- References --------------------------------#
 
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Fonts/DefaultFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:Fonts/DefaultFont.spritefont
