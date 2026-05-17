@@ -2,14 +2,6 @@ using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Models
 {
-    public enum ItemType
-    {
-        None,
-        Tool,
-        Weapon,
-        Resource,
-    }
-
     public class InventoryItem
     {
         public string Name;

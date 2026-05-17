@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using DeadOrbit.Core;
-using DeadOrbit.Entities;
 using DeadOrbit.Entities.Enemies;
+using DeadOrbit.Entities.Resources;
 using DeadOrbit.Entities.Structures;
 using DeadOrbit.Models;
 

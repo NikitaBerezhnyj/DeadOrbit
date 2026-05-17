@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DeadOrbit.Core;
+using DeadOrbit.Models;
 
 namespace DeadOrbit.Systems
 {

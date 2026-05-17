@@ -1,6 +1,7 @@
 using System;
 using DeadOrbit.Core;
 using DeadOrbit.Managers;
+using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -35,16 +36,28 @@ namespace DeadOrbit.UI
             if (!IsVisible)
                 return false;
 
-            if (Systems.InputSystem.UiUp)
+            if (InputSystem.UiUp)
                 _selectedIndex = (_selectedIndex - 1 + _menuKeys.Length) % _menuKeys.Length;
-
-            if (Systems.InputSystem.UiDown)
+            if (InputSystem.UiDown)
                 _selectedIndex = (_selectedIndex + 1) % _menuKeys.Length;
 
-            if (Systems.InputSystem.UsePressed)
+            Vector2 mouse = InputSystem.MouseScreenPosition;
+            for (int i = 0; i < _menuKeys.Length; i++)
             {
-                return ExecuteSelected();
+                if (GetButtonRect(i).Contains(mouse.ToPoint()))
+                    _selectedIndex = i;
             }
+
+            bool confirm =
+                InputSystem.UsePressed
+                || InputSystem.EnterPressed
+                || (
+                    InputSystem.MouseLeftPressed
+                    && GetButtonRect(_selectedIndex).Contains(mouse.ToPoint())
+                );
+
+            if (confirm)
+                return ExecuteSelected();
 
             return false;
         }
@@ -58,6 +71,21 @@ namespace DeadOrbit.UI
         public void Hide()
         {
             IsVisible = false;
+        }
+
+        private Rectangle GetButtonRect(int i)
+        {
+            int screenW = _graphics.Viewport.Width;
+            int screenH = _graphics.Viewport.Height;
+            int totalH = _menuKeys.Length * ButtonHeight + (_menuKeys.Length - 1) * ButtonSpacing;
+            int startY = screenH / 2 - totalH / 2;
+
+            return new Rectangle(
+                screenW / 2 - ButtonWidth / 2,
+                startY + i * (ButtonHeight + ButtonSpacing),
+                ButtonWidth,
+                ButtonHeight
+            );
         }
 
         private bool ExecuteSelected()
@@ -106,49 +134,41 @@ namespace DeadOrbit.UI
                 );
             }
 
-            int totalH = _menuKeys.Length * ButtonHeight + (_menuKeys.Length - 1) * ButtonSpacing;
-            int startY = screenH / 2 - totalH / 2;
-
             for (int i = 0; i < _menuKeys.Length; i++)
             {
-                int x = screenW / 2 - ButtonWidth / 2;
-                int y = startY + i * (ButtonHeight + ButtonSpacing);
-
+                Rectangle rect = GetButtonRect(i);
                 bool isSelected = i == _selectedIndex;
-
-                string currentLabel = LocalizationManager.Get(_menuKeys[i]);
+                string label = LocalizationManager.Get(_menuKeys[i]);
 
                 spriteBatch.Draw(
                     GameResources.Pixel,
-                    new Rectangle(x, y, ButtonWidth, ButtonHeight),
+                    rect,
                     isSelected ? new Color(80, 80, 80, 220) : new Color(30, 30, 30, 180)
                 );
 
                 DrawBorder(
                     spriteBatch,
-                    new Rectangle(x, y, ButtonWidth, ButtonHeight),
+                    rect,
                     isSelected ? Color.White : new Color(100, 100, 100, 200),
                     2
                 );
 
                 if (GameResources.DefaultFont != null)
                 {
-                    Vector2 textSize = GameResources.DefaultFont.MeasureString(currentLabel);
+                    Vector2 textSize = GameResources.DefaultFont.MeasureString(label);
                     Vector2 textPos = new Vector2(
-                        x + ButtonWidth / 2f - textSize.X / 2f,
-                        y + ButtonHeight / 2f - textSize.Y / 2f
+                        rect.X + ButtonWidth / 2f - textSize.X / 2f,
+                        rect.Y + ButtonHeight / 2f - textSize.Y / 2f
                     );
-
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        currentLabel,
+                        label,
                         textPos + new Vector2(1, 1),
                         Color.Black * 0.8f
                     );
-
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        currentLabel,
+                        label,
                         textPos,
                         isSelected ? Color.White : Color.Gray
                     );

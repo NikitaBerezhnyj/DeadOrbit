@@ -1,10 +1,11 @@
 using DeadOrbit.Core;
 using DeadOrbit.Interfaces;
 using DeadOrbit.Models;
+using DeadOrbit.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Resources
 {
     public abstract class ResourceNode : GameObject, ICollidable
     {

@@ -1,9 +1,8 @@
-using DeadOrbit.Core;
 using DeadOrbit.Models;
+using DeadOrbit.Rendering;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Resources
 {
     public class CoalNode : ResourceNode
     {

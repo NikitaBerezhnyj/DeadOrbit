@@ -1,3 +1,4 @@
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Core
