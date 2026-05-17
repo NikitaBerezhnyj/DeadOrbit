@@ -1,8 +1,8 @@
-using DeadOrbit.Core;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit
+namespace DeadOrbit.Core
 {
     public abstract class GameObject
     {

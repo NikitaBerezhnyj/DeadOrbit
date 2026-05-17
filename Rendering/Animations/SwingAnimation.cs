@@ -1,8 +1,10 @@
 using System;
+using DeadOrbit.Core;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Rendering
 {
     public class SwingAnimation
     {

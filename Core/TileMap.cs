@@ -1,32 +1,11 @@
 using System.Collections.Generic;
+using DeadOrbit.Core;
 using DeadOrbit.Interfaces;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace DeadOrbit.Core
 {
-    public enum TileType
-    {
-        Ground,
-        Wall,
-    }
-
-    public readonly struct WallTile : ICollidable
-    {
-        public Rectangle Bounds { get; }
-        public bool BlocksMovement => true;
-
-        public WallTile(int tileX, int tileY)
-        {
-            Bounds = new Rectangle(
-                tileX * TileGrid.TileSize,
-                tileY * TileGrid.TileSize,
-                TileGrid.TileSize,
-                TileGrid.TileSize
-            );
-        }
-    }
-
     public class TileMap
     {
         private readonly int[,] _tiles;

@@ -1,9 +1,11 @@
+using DeadOrbit.Core;
+using DeadOrbit.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Systems
+namespace DeadOrbit.UI
 {
-    public class PlayerHealthRenderer
+    public class HealthBar
     {
         private const int BarWidth = 160;
         private const int BarHeight = 12;
@@ -11,7 +13,7 @@ namespace DeadOrbit.Systems
 
         private readonly Player _player;
 
-        public PlayerHealthRenderer(Player player)
+        public HealthBar(Player player)
         {
             _player = player;
         }

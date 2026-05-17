@@ -1,7 +1,8 @@
 using System;
+using DeadOrbit.Core;
 using Microsoft.Xna.Framework;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Models
 {
     public struct GridPosition
     {

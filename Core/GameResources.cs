@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit
+namespace DeadOrbit.Core
 {
     public static class GameResources
     {

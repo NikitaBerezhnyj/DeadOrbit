@@ -5,11 +5,12 @@ using DeadOrbit.Entities.Items;
 using DeadOrbit.Interfaces;
 using DeadOrbit.Managers;
 using DeadOrbit.Models;
+using DeadOrbit.Rendering;
 using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit
+namespace DeadOrbit.Entities
 {
     public class Player : GameObject
     {
@@ -71,11 +72,6 @@ namespace DeadOrbit
                 FacingDirection = dir;
                 Position += dir * Speed * dt;
             }
-
-            if (InputSystem.NextItem)
-                InventoryManager.Next();
-            if (InputSystem.PrevItem)
-                InventoryManager.Prev();
 
             Position.X = MathHelper.Clamp(Position.X, 0, TileGrid.WorldPixelW - TileGrid.TileSize);
             Position.Y = MathHelper.Clamp(Position.Y, 0, TileGrid.WorldPixelH - TileGrid.TileSize);

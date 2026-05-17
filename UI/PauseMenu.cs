@@ -1,5 +1,7 @@
 using System;
 using DeadOrbit.Core;
+using DeadOrbit.Managers;
+using DeadOrbit.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -10,28 +12,52 @@ namespace DeadOrbit.UI
         private readonly GraphicsDevice _graphics;
         private int _selectedIndex = 0;
 
-        private readonly string[] _labels = { "Продовжити", "Налаштування", "Зберегти", "Вийти" };
+        private readonly string[] _menuKeys =
+        {
+            "menu_continue",
+            "menu_options",
+            "menu_save",
+            "menu_quit",
+        };
+
         private const int ButtonWidth = 240;
         private const int ButtonHeight = 44;
         private const int ButtonSpacing = 12;
 
         public bool IsVisible { get; private set; } = false;
 
+        public PauseMenu(GraphicsDevice graphics)
+        {
+            _graphics = graphics;
+        }
+
         public bool Update()
         {
             if (!IsVisible)
                 return false;
 
-            if (Systems.InputSystem.UiUp)
-                _selectedIndex = (_selectedIndex - 1 + _labels.Length) % _labels.Length;
+            if (InputSystem.UiUp)
+                _selectedIndex = (_selectedIndex - 1 + _menuKeys.Length) % _menuKeys.Length;
+            if (InputSystem.UiDown)
+                _selectedIndex = (_selectedIndex + 1) % _menuKeys.Length;
 
-            if (Systems.InputSystem.UiDown)
-                _selectedIndex = (_selectedIndex + 1) % _labels.Length;
-
-            if (Systems.InputSystem.UsePressed)
+            Vector2 mouse = InputSystem.MouseScreenPosition;
+            for (int i = 0; i < _menuKeys.Length; i++)
             {
-                return ExecuteSelected();
+                if (GetButtonRect(i).Contains(mouse.ToPoint()))
+                    _selectedIndex = i;
             }
+
+            bool confirm =
+                InputSystem.UsePressed
+                || InputSystem.EnterPressed
+                || (
+                    InputSystem.MouseLeftPressed
+                    && GetButtonRect(_selectedIndex).Contains(mouse.ToPoint())
+                );
+
+            if (confirm)
+                return ExecuteSelected();
 
             return false;
         }
@@ -45,6 +71,21 @@ namespace DeadOrbit.UI
         public void Hide()
         {
             IsVisible = false;
+        }
+
+        private Rectangle GetButtonRect(int i)
+        {
+            int screenW = _graphics.Viewport.Width;
+            int screenH = _graphics.Viewport.Height;
+            int totalH = _menuKeys.Length * ButtonHeight + (_menuKeys.Length - 1) * ButtonSpacing;
+            int startY = screenH / 2 - totalH / 2;
+
+            return new Rectangle(
+                screenW / 2 - ButtonWidth / 2,
+                startY + i * (ButtonHeight + ButtonSpacing),
+                ButtonWidth,
+                ButtonHeight
+            );
         }
 
         private bool ExecuteSelected()
@@ -83,7 +124,7 @@ namespace DeadOrbit.UI
 
             if (GameResources.DefaultFont != null)
             {
-                string title = "ПАУЗА";
+                string title = LocalizationManager.Get("pause_menu");
                 Vector2 titleSize = GameResources.DefaultFont.MeasureString(title);
                 spriteBatch.DrawString(
                     GameResources.DefaultFont,
@@ -93,46 +134,41 @@ namespace DeadOrbit.UI
                 );
             }
 
-            int totalH = _labels.Length * ButtonHeight + (_labels.Length - 1) * ButtonSpacing;
-            int startY = screenH / 2 - totalH / 2;
-
-            for (int i = 0; i < _labels.Length; i++)
+            for (int i = 0; i < _menuKeys.Length; i++)
             {
-                int x = screenW / 2 - ButtonWidth / 2;
-                int y = startY + i * (ButtonHeight + ButtonSpacing);
-
+                Rectangle rect = GetButtonRect(i);
                 bool isSelected = i == _selectedIndex;
+                string label = LocalizationManager.Get(_menuKeys[i]);
 
                 spriteBatch.Draw(
                     GameResources.Pixel,
-                    new Rectangle(x, y, ButtonWidth, ButtonHeight),
+                    rect,
                     isSelected ? new Color(80, 80, 80, 220) : new Color(30, 30, 30, 180)
                 );
 
                 DrawBorder(
                     spriteBatch,
-                    new Rectangle(x, y, ButtonWidth, ButtonHeight),
+                    rect,
                     isSelected ? Color.White : new Color(100, 100, 100, 200),
                     2
                 );
 
                 if (GameResources.DefaultFont != null)
                 {
-                    Vector2 textSize = GameResources.DefaultFont.MeasureString(_labels[i]);
+                    Vector2 textSize = GameResources.DefaultFont.MeasureString(label);
                     Vector2 textPos = new Vector2(
-                        x + ButtonWidth / 2f - textSize.X / 2f,
-                        y + ButtonHeight / 2f - textSize.Y / 2f
+                        rect.X + ButtonWidth / 2f - textSize.X / 2f,
+                        rect.Y + ButtonHeight / 2f - textSize.Y / 2f
                     );
-
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        _labels[i],
+                        label,
                         textPos + new Vector2(1, 1),
                         Color.Black * 0.8f
                     );
                     spriteBatch.DrawString(
                         GameResources.DefaultFont,
-                        _labels[i],
+                        label,
                         textPos,
                         isSelected ? Color.White : Color.Gray
                     );
@@ -162,11 +198,6 @@ namespace DeadOrbit.UI
                 new Rectangle(rect.Right - thickness, rect.Y, thickness, rect.Height),
                 color
             );
-        }
-
-        public PauseMenu(GraphicsDevice graphics)
-        {
-            _graphics = graphics;
         }
     }
 }

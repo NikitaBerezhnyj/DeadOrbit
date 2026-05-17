@@ -1,11 +1,12 @@
+using DeadOrbit.Core;
 using DeadOrbit.Managers;
 using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Systems
+namespace DeadOrbit.UI
 {
-    public class HotbarRenderer
+    public class Hotbar
     {
         private const int SlotSize = 48;
         private const int SlotPadding = 6;
@@ -16,7 +17,7 @@ namespace DeadOrbit.Systems
         private readonly InventoryManager _inventory;
         private readonly GraphicsDevice _graphics;
 
-        public HotbarRenderer(InventoryManager inventory, GraphicsDevice graphics)
+        public Hotbar(InventoryManager inventory, GraphicsDevice graphics)
         {
             _inventory = inventory;
             _graphics = graphics;

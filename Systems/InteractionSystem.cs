@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using DeadOrbit.Core;
 using DeadOrbit.Entities;
 using DeadOrbit.Entities.Items;
+using DeadOrbit.Entities.Resources;
+using DeadOrbit.Rendering;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Systems

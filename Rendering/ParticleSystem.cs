@@ -1,20 +1,12 @@
 using System;
 using System.Collections.Generic;
+using DeadOrbit.Core;
+using DeadOrbit.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace DeadOrbit.Core
+namespace DeadOrbit.Rendering
 {
-    public class Particle
-    {
-        public Vector2 Position;
-        public Vector2 Velocity;
-        public float Life;
-        public float MaxLife;
-        public Color Color;
-        public int Size;
-    }
-
     public class ParticleSystem
     {
         private readonly List<Particle> _particles = new();

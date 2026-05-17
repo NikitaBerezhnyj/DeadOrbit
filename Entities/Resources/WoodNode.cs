@@ -1,8 +1,8 @@
-using DeadOrbit.Core;
 using DeadOrbit.Models;
+using DeadOrbit.Rendering;
 using Microsoft.Xna.Framework;
 
-namespace DeadOrbit.Entities
+namespace DeadOrbit.Entities.Resources
 {
     public class WoodNode : ResourceNode
     {

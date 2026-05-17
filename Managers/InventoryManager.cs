@@ -1,6 +1,6 @@
 using System;
-using DeadOrbit.Core;
 using DeadOrbit.Models;
+using DeadOrbit.Rendering;
 using Microsoft.Xna.Framework;
 
 namespace DeadOrbit.Managers
@@ -21,52 +21,65 @@ namespace DeadOrbit.Managers
                 "Axe",
                 ItemType.Tool,
                 1,
-                Microsoft.Xna.Framework.Color.SandyBrown,
+                Color.SandyBrown,
                 SpriteSourceMap.Axe
             );
             Slots[1] = new InventoryItem(
                 "Pickaxe",
                 ItemType.Tool,
                 1,
-                Microsoft.Xna.Framework.Color.LightGray,
+                Color.LightGray,
                 SpriteSourceMap.Pickaxe
             );
             Slots[2] = new InventoryItem(
                 "Sword",
                 ItemType.Weapon,
                 1,
-                Microsoft.Xna.Framework.Color.WhiteSmoke,
+                Color.WhiteSmoke,
                 SpriteSourceMap.Sword
             );
             Slots[3] = new InventoryItem(
                 "Coal",
                 ItemType.Resource,
                 3,
-                Microsoft.Xna.Framework.Color.DarkGray,
+                Color.DarkGray,
                 SpriteSourceMap.Coal
             );
             Slots[4] = new InventoryItem(
                 "Stone",
                 ItemType.Resource,
                 5,
-                Microsoft.Xna.Framework.Color.SlateGray,
+                Color.SlateGray,
                 SpriteSourceMap.Stone
             );
             Slots[5] = new InventoryItem(
                 "Wood",
                 ItemType.Resource,
                 2,
-                Microsoft.Xna.Framework.Color.SaddleBrown,
+                Color.SaddleBrown,
                 SpriteSourceMap.Wood
             );
 
             for (int i = 0; i < Size; i++)
-                Slots[i] ??= new InventoryItem(
-                    "",
-                    ItemType.None,
-                    0,
-                    Microsoft.Xna.Framework.Color.Transparent
-                );
+                Slots[i] ??= new InventoryItem("", ItemType.None, 0, Color.Transparent);
+        }
+
+        public void Next()
+        {
+            ActiveIndex = (ActiveIndex + 1) % Size;
+            Console.WriteLine($"[INVENTORY] Active: {ActiveItem}");
+        }
+
+        public void Prev()
+        {
+            ActiveIndex = (ActiveIndex - 1 + Size) % Size;
+            Console.WriteLine($"[INVENTORY] Active: {ActiveItem}");
+        }
+
+        public void SetActive(int index)
+        {
+            if (index >= 0 && index < Size)
+                ActiveIndex = index;
         }
 
         public bool TryAdd(InventoryItem incoming)
@@ -93,18 +106,6 @@ namespace DeadOrbit.Managers
 
             Console.WriteLine("[INV] Інвентар повний!");
             return false;
-        }
-
-        public void Next()
-        {
-            ActiveIndex = (ActiveIndex + 1) % Size;
-            Console.WriteLine($"[INVENTORY] Active: {ActiveItem}");
-        }
-
-        public void Prev()
-        {
-            ActiveIndex = (ActiveIndex - 1 + Size) % Size;
-            Console.WriteLine($"[INVENTORY] Active: {ActiveItem}");
         }
 
         public void DropActive()

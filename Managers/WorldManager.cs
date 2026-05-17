@@ -5,8 +5,10 @@ using DeadOrbit.Core;
 using DeadOrbit.Entities;
 using DeadOrbit.Entities.Enemies;
 using DeadOrbit.Entities.Items;
+using DeadOrbit.Entities.Resources;
 using DeadOrbit.Entities.Structures;
 using DeadOrbit.Interfaces;
+using DeadOrbit.Models;
 using DeadOrbit.Rendering;
 using DeadOrbit.Systems;
 using DeadOrbit.UI;
@@ -32,8 +34,8 @@ namespace DeadOrbit.Managers
 
         private readonly ParticleSystem _particles = new();
 
-        private HotbarRenderer _hotbar;
-        private PlayerHealthRenderer _healthRenderer;
+        private Hotbar _hotbar;
+        private HealthBar _healthRenderer;
 
         private HashSet<GridPosition> _blockedTiles = new();
 
@@ -65,8 +67,8 @@ namespace DeadOrbit.Managers
             _enemies = world.Enemies;
             _player = new Player(13, 9);
             _camera = new Camera(graphicsDevice);
-            _hotbar = new HotbarRenderer(_player.InventoryManager, graphicsDevice);
-            _healthRenderer = new PlayerHealthRenderer(_player);
+            _hotbar = new Hotbar(_player.InventoryManager, graphicsDevice);
+            _healthRenderer = new HealthBar(_player);
 
             _pauseMenu = new PauseMenu(graphicsDevice);
 
@@ -129,24 +131,34 @@ namespace DeadOrbit.Managers
 
             _particles.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-            if (InputSystem.UsePressed)
+            if (InputSystem.ActionPressed)
             {
-                var drop = InteractionSystem.TryMine(_player, _resources, _particles);
+                var miningDrop = InteractionSystem.TryMine(_player, _resources, _particles);
 
-                if (drop != null)
+                if (miningDrop != null)
                 {
-                    _droppedItems.Add(drop);
-                    Console.WriteLine($"[DROP] Mining drop: {drop.Item.Name} на {drop.Position}");
+                    _droppedItems.Add(miningDrop);
+
+                    Console.WriteLine(
+                        $"[DROP] Mining drop: {miningDrop.Item.Name} на {miningDrop.Position}"
+                    );
+
                     RebuildBlockedTiles();
+                }
+                else
+                {
+                    var combatDrop = CombatSystem.TryPlayerAttack(_player, _enemies);
+
+                    if (combatDrop != null)
+                        _droppedItems.Add(combatDrop);
                 }
             }
 
-            if (InputSystem.AttackPressed)
+            if (InputSystem.UsePressed)
             {
-                var drop = CombatSystem.TryPlayerAttack(_player, _enemies);
-
-                if (drop != null)
-                    _droppedItems.Add(drop);
+                Console.WriteLine(
+                    $"[INPUT] Pressed use button (for UI or using processing plants)"
+                );
             }
 
             if (InputSystem.DropPressed)
@@ -155,6 +167,15 @@ namespace DeadOrbit.Managers
                 if (dropped != null)
                     _droppedItems.Add(dropped);
             }
+
+            int hotkeySlot = InputSystem.HotkeySlot;
+            if (hotkeySlot != -1)
+                _player.InventoryManager.SetActive(hotkeySlot);
+
+            if (InputSystem.NextItem)
+                _player.InventoryManager.Next();
+            if (InputSystem.PrevItem)
+                _player.InventoryManager.Prev();
 
             _droppedItems.RemoveAll(d => d.IsPickedUp);
 
